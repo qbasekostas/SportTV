@@ -4,10 +4,10 @@ const axios = require('axios');
 const m3u8Parser = require('m3u8-parser');
 
 const urls = [
-"https://s2watch.link/player.php?id=chftknovasportprime",
-"https://s2watch.link/player.php?id=chftknovasport1",
-"https://s2watch.link/player.php?id=chftknovasport2",
-"https://s2watch.link/player.php?id=chftknovasport3",
+"https://s2watch.link/player.php?id=chftknovasportprime"
+"https://s2watch.link/player.php?id=chftknovasport1"
+"https://s2watch.link/player.php?id=chftknovasport2"
+"https://s2watch.link/player.php?id=chftknovasport3"
 "https://s2watch.link/player.php?id=chftknovasport4",
 "https://s2watch.link/player.php?id=chftknovasport5",
 "https://s2watch.link/player.php?id=chftkcosmote1",
@@ -19,7 +19,7 @@ const urls = [
 "https://s2watch.link/player.php?id=chftkcosmote7",
 "https://s2watch.link/player.php?id=chftkcosmote8",
 "https://s2watch.link/player.php?id=chftkcosmote9"
-    # Add more URLs as needed
+    // Add more URLs as needed
 ];
 
 async function fetchM3U8(url) {
@@ -72,3 +72,4 @@ main().catch(error => {
     console.error('Error running detector:', error);
     process.exit(1);
 });
+            print(f"No M3U8 URL found for {url}")
