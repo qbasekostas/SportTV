@@ -92,10 +92,11 @@ async function commitAndPushChanges() {
     execSync('git config --global user.email "your-email@example.com"');
     execSync('git config --global user.name "your-username"');
 
-    // Check if .git directory exists to determine if it's an initialized repo
-    if (!fs.existsSync(path.join(__dirname, '.git'))) {
-        execSync('git init');
+    // Add remote if it doesn't exist
+    try {
         execSync(`git remote add origin https://${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
+    } catch (error) {
+        console.log('Remote origin already exists. Skipping adding remote.');
     }
 
     execSync('git add .');
