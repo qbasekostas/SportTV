@@ -24,7 +24,7 @@ jobs:
 
     - name: Run M3U Detector
       run: npm start
-    
+
     - name: Upload playlist.m3u as artifact
       uses: actions/upload-artifact@v2
       with:
