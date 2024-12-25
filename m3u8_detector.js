@@ -4,8 +4,21 @@ const axios = require('axios');
 const m3u8Parser = require('m3u8-parser');
 
 const urls = [
-    "https://sporthd.live/channel/slg-Nova-Sports-Prime?l=0",
-    "https://sporthd.live/channel/slg-Nova-Sports-1?l=0",
+"https://s2watch.link/player.php?id=chftknovasportprime",
+"https://s2watch.link/player.php?id=chftknovasport1",
+"https://s2watch.link/player.php?id=chftknovasport2",
+"https://s2watch.link/player.php?id=chftknovasport3",
+"https://s2watch.link/player.php?id=chftknovasport4",
+"https://s2watch.link/player.php?id=chftknovasport5",
+"https://s2watch.link/player.php?id=chftkcosmote1",
+"https://s2watch.link/player.php?id=chftkcosmote2",
+"https://s2watch.link/player.php?id=chftkcosmote3",
+"https://s2watch.link/player.php?id=chftkcosmote4",
+"https://s2watch.link/player.php?id=chftkcosmote5",
+"https://s2watch.link/player.php?id=chftkcosmote6",
+"https://s2watch.link/player.php?id=chftkcosmote7",
+"https://s2watch.link/player.php?id=chftkcosmote8",
+"https://s2watch.link/player.php?id=chftkcosmote9"
     // Add more URLs as needed
 ];
 
