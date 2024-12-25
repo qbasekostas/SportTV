@@ -28,7 +28,7 @@ jobs:
       run: npm start
 
     - name: Upload results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: m3u8-results
         path: m3u8_results.json
