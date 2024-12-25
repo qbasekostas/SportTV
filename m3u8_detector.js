@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const m3u8Parser = require('m3u8-parser');
 
 const urls = [
@@ -24,21 +23,25 @@ const urls = [
 
 async function fetchM3U8(url) {
     try {
-        const response = await axios.get(url);
-        const content = response.data;
-        const $ = cheerio.load(content);
-        let m3u8Url = null;
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2' });
 
-        $('source').each((i, elem) => {
-            const src = $(elem).attr('src');
-            if (src && src.endsWith('.m3u8')) {
-                m3u8Url = src;
-            }
+        const m3u8Url = await page.evaluate(() => {
+            let src = null;
+            document.querySelectorAll('source').forEach(source => {
+                if (source.src.endsWith('.m3u8')) {
+                    src = source.src;
+                }
+            });
+            return src;
         });
 
+        await browser.close();
+
         if (m3u8Url) {
-            const m3u8Response = await axios.get(m3u8Url);
-            return m3u8Response.data;
+            const response = await axios.get(m3u8Url);
+            return response.data;
         }
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
