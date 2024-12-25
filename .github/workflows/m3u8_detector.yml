@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.ACTIONS_PAT }}
 
     - name: Set up Node.js
       uses: actions/setup-node@v2
@@ -31,7 +33,6 @@ jobs:
       run: |
         git config --global user.email "your-email@example.com"
         git config --global user.name "your-username"
-        git remote set-url origin https://qbasekostas:${{ secrets.ACTIONS_PAT }}@github.com/qbasekostas/SportTV.git
         git add .
         git commit -m "Add M3U playlist"
         git push -u origin main --force
