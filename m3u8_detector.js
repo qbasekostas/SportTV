@@ -2,12 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const m3u8 = require('m3u8');
-const { execSync } = require('child_process');
-
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO_OWNER = 'qbasekostas';
-const REPO_NAME = 'SportTV';
-const FILE_PATH = 'm3u8_results.json';
 
 const urls = [
     "https://foothubhd.org/cdn3/linka.php",
@@ -70,7 +64,7 @@ async function fetchM3U8(url) {
 
             const content = await response.text();
             await browser.close();
-            return content;
+            return m3u8Url;
         }
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
@@ -80,34 +74,14 @@ async function fetchM3U8(url) {
     return null;
 }
 
-async function parseM3U8(content) {
-    return new Promise((resolve, reject) => {
-        const parser = m3u8.createStream();
-        parser.write(content);
-        parser.end();
-
-        parser.on('m3u', function(m3u) {
-            resolve(m3u);
-        });
-
-        parser.on('error', function(err) {
-            reject(err);
-        });
-    });
-}
-
 async function detectM3U8() {
     const results = [];
     for (const url of urls) {
         console.log(`Fetching URL: ${url}`);
-        const content = await fetchM3U8(url);
-        if (content) {
+        const m3u8Url = await fetchM3U8(url);
+        if (m3u8Url) {
             console.log(`M3U8 content found for URL: ${url}`);
-            const manifest = await parseM3U8(content);
-            results.push({
-                url,
-                manifest
-            });
+            results.push(m3u8Url);
         } else {
             console.log(`No M3U8 content found for URL: ${url}`);
         }
@@ -115,29 +89,16 @@ async function detectM3U8() {
     return results;
 }
 
-async function saveResultsToRepo(results) {
-    const outputPath = path.join(__dirname, FILE_PATH);
-    fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-    console.log(`Results written to ${outputPath}`);
-
-    // Configure Git
-    execSync('git config --global user.email "your-email@example.com"');
-    execSync('git config --global user.name "your-username"');
-
-    // Initialize repository and add files
-    execSync('git init');
-    execSync(`git remote add origin https://${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
-    execSync('git add .');
-    execSync('git commit -m "Add m3u8 results"');
-
-    // Push changes to the repository
-    execSync('git branch -M main');
-    execSync('git push -u origin main');
+async function saveAsM3UPlaylist(m3u8Urls) {
+    const playlistContent = '#EXTM3U\n' + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n');
+    const outputPath = path.join(__dirname, 'playlist.m3u');
+    fs.writeFileSync(outputPath, playlistContent);
+    console.log(`M3U playlist written to ${outputPath}`);
 }
 
 async function main() {
-    const results = await detectM3U8();
-    await saveResultsToRepo(results);
+    const m3u8Urls = await detectM3U8();
+    await saveAsM3UPlaylist(m3u8Urls);
 }
 
 main().catch(error => {
