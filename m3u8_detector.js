@@ -2,6 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const m3u8 = require('m3u8');
+const { execSync } = require('child_process');
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = 'qbasekostas';
+const REPO_NAME = 'SportTV';
+const FILE_PATH = 'm3u8_results.json';
 
 const urls = [
     "https://foothubhd.org/cdn3/linka.php",
@@ -109,11 +115,29 @@ async function detectM3U8() {
     return results;
 }
 
-async function main() {
-    const results = await detectM3U8();
-    const outputPath = path.join(__dirname, 'm3u8_results.json');
+async function saveResultsToRepo(results) {
+    const outputPath = path.join(__dirname, FILE_PATH);
     fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
     console.log(`Results written to ${outputPath}`);
+
+    // Configure Git
+    execSync('git config --global user.email "your-email@example.com"');
+    execSync('git config --global user.name "your-username"');
+
+    // Initialize repository and add files
+    execSync('git init');
+    execSync(`git remote add origin https://${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
+    execSync('git add .');
+    execSync('git commit -m "Add m3u8 results"');
+
+    // Push changes to the repository
+    execSync('git branch -M main');
+    execSync('git push -u origin main');
+}
+
+async function main() {
+    const results = await detectM3U8();
+    await saveResultsToRepo(results);
 }
 
 main().catch(error => {
