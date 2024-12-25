@@ -38,7 +38,7 @@ async function fetchM3U8(url) {
         await page.goto(url, { waitUntil: 'networkidle2' });
 
         // Wait for a while to ensure all network requests are complete
-        await page.waitForTimeout(5000); // Use the correct function for waiting
+        await page.waitForTimeout(5000);
 
         if (m3u8Url) {
             const response = await page.goto(m3u8Url);
@@ -64,8 +64,10 @@ function parseM3U8(content) {
 async function detectM3U8() {
     const results = [];
     for (const url of urls) {
+        console.log(`Fetching URL: ${url}`);
         const content = await fetchM3U8(url);
         if (content) {
+            console.log(`M3U8 content found for URL: ${url}`);
             const manifest = parseM3U8(content);
             const duration = manifest.segments ? manifest.segments.reduce((acc, seg) => acc + seg.duration, 0) : 0;
             results.push({
