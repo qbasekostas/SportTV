@@ -21,11 +21,11 @@ async function fetchM3U8(url) {
     let m3u8Url = null;
 
     page.on('response', async (response) => {
-        const url = response.url();
+        const responseUrl = response.url();
         const contentType = response.headers()['content-type'];
-        console.log(`Network response URL: ${url}, Content-Type: ${contentType}`);
-        if (url.endsWith('.m3u8')) {
-            m3u8Url = url;
+        console.log(`Network response URL: ${responseUrl}, Content-Type: ${contentType}`);
+        if (responseUrl.endsWith('.m3u8')) {
+            m3u8Url = responseUrl;
         }
     });
 
@@ -51,7 +51,7 @@ async function fetchM3U8(url) {
         if (m3u8Url) {
             const response = await page.goto(m3u8Url);
             const contentType = response.headers()['content-type'];
-            
+
             if (contentType !== 'application/vnd.apple.mpegurl' && contentType !== 'application/x-mpegURL') {
                 console.log(`Invalid content type for URL: ${url}`);
                 await browser.close();
@@ -90,7 +90,7 @@ async function detectM3U8() {
     const results = [];
     for (const url of urls) {
         console.log(`Fetching URL: ${url}`);
-        const content = await fetchM3U8(url);
+        const content = await fetchM3u8(url);
         if (content) {
             console.log(`M3U8 content found for URL: ${url}`);
             const manifest = await parseM3U8(content);
