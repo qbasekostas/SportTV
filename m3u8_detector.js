@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const m3u8Parser = require('m3u8-parser');
+const m3u8 = require('m3u8');
 
 const urls = [
     "https://s2watch.link/player.php?id=chftknovasportprime",
@@ -38,7 +38,7 @@ async function fetchM3U8(url) {
         await page.goto(url, { waitUntil: 'networkidle2' });
 
         // Wait for a while to ensure all network requests are complete
-        await page.waitForTimeout(5000);
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         if (m3u8Url) {
             const response = await page.goto(m3u8Url);
@@ -54,11 +54,20 @@ async function fetchM3U8(url) {
     return null;
 }
 
-function parseM3U8(content) {
-    const parser = new m3u8Parser.Parser();
-    parser.push(content);
-    parser.end();
-    return parser.manifest;
+async function parseM3U8(content) {
+    return new Promise((resolve, reject) => {
+        const parser = m3u8.createStream();
+        parser.write(content);
+        parser.end();
+
+        parser.on('m3u', function(m3u) {
+            resolve(m3u);
+        });
+
+        parser.on('error', function(err) {
+            reject(err);
+        });
+    });
 }
 
 async function detectM3U8() {
@@ -68,11 +77,9 @@ async function detectM3U8() {
         const content = await fetchM3U8(url);
         if (content) {
             console.log(`M3U8 content found for URL: ${url}`);
-            const manifest = parseM3U8(content);
-            const duration = manifest.segments ? manifest.segments.reduce((acc, seg) => acc + seg.duration, 0) : 0;
+            const manifest = await parseM3U8(content);
             results.push({
                 url,
-                duration,
                 manifest
             });
         } else {
