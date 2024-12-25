@@ -26,7 +26,7 @@ jobs:
       run: npm start
 
     - name: Upload playlist.m3u as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: playlist
         path: playlist.m3u
