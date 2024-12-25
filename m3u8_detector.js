@@ -90,7 +90,7 @@ async function detectM3U8() {
     const results = [];
     for (const url of urls) {
         console.log(`Fetching URL: ${url}`);
-        const content = await fetchM3u8(url);
+        const content = await fetchM3U8(url);
         if (content) {
             console.log(`M3U8 content found for URL: ${url}`);
             const manifest = await parseM3U8(content);
