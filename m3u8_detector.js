@@ -23,8 +23,6 @@ async function fetchM3U8(url) {
 
     page.on('response', async (response) => {
         const responseUrl = response.url();
-        const contentType = response.headers()['content-type'];
-        console.log(`Network response URL: ${responseUrl}, Content-Type: ${contentType}`);
         if (responseUrl.endsWith('.m3u8')) {
             m3u8Url = responseUrl;
         }
@@ -36,29 +34,23 @@ async function fetchM3U8(url) {
         // Wait for a while to ensure all network requests are complete
         await new Promise(resolve => setTimeout(resolve, 5000));
 
+        // If no m3u8 URL was found through network responses, check the page content
         if (!m3u8Url) {
-            // Check for M3U8 URLs in the page content
             const pageContent = await page.content();
             const regex = /(http[s]?:\/\/[^\s]*\.m3u8)/g;
             const matches = pageContent.match(regex);
             if (matches && matches.length > 0) {
                 m3u8Url = matches[0];
-                console.log(`Found M3U8 URL in page content: ${m3u8Url}`);
-            } else {
-                console.log(`No M3U8 URL found in page content for ${url}`);
             }
         }
 
-        if (m3u8Url) {
-            await browser.close();
-            return m3u8Url;
-        }
+        await browser.close();
+        return m3u8Url;
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
+        await browser.close();
+        return null;
     }
-
-    await browser.close();
-    return null;
 }
 
 async function detectM3U8() {
@@ -77,7 +69,7 @@ async function detectM3U8() {
 }
 
 async function saveAsM3UPlaylist(m3u8Urls) {
-    const playlistContent = '#EXTM3U\n' + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n');
+    const playlistContent = m3u8Urls.join('\n');
     const outputPath = path.join(__dirname, FILE_PATH);
     fs.writeFileSync(outputPath, playlistContent);
     console.log(`M3U playlist written to ${outputPath}`);
