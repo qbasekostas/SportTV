@@ -1,4 +1,4 @@
-name: Find M3U8 URLs
+name: M3U8 Detector
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  find-m3u8:
+  detect-m3u8:
     runs-on: ubuntu-latest
 
     steps:
