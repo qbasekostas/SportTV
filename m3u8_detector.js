@@ -4,21 +4,14 @@ const puppeteer = require('puppeteer');
 const m3u8 = require('m3u8');
 
 const urls = [
-    "https://s2watch.link/player.php?id=chftknovasportprime",
-    "https://s2watch.link/player.php?id=chftknovasport1",
-    "https://s2watch.link/player.php?id=chftknovasport2",
-    "https://s2watch.link/player.php?id=chftknovasport3",
-    "https://s2watch.link/player.php?id=chftknovasport4",
-    "https://s2watch.link/player.php?id=chftknovasport5",
-    "https://s2watch.link/player.php?id=chftkcosmote1",
-    "https://s2watch.link/player.php?id=chftkcosmote2",
-    "https://s2watch.link/player.php?id=chftkcosmote3",
-    "https://s2watch.link/player.php?id=chftkcosmote4",
-    "https://s2watch.link/player.php?id=chftkcosmote5",
-    "https://s2watch.link/player.php?id=chftkcosmote6",
-    "https://s2watch.link/player.php?id=chftkcosmote7",
-    "https://s2watch.link/player.php?id=chftkcosmote8",
-    "https://s2watch.link/player.php?id=chftkcosmote9"
+    "https://foothubhd.org/cdn3/linka.php",
+    "https://foothubhd.org/cdn3/linkb.php",
+    "https://foothubhd.org/cdn3/linkc.php",
+    "https://foothubhd.org/cdn3/linkd.php",
+    "https://foothubhd.org/cdn3/linke.php",
+    "https://foothubhd.org/cdn3/linkf.php",
+    "https://foothubhd.org/cdn3/linkg.php",
+    "https://foothubhd.org/cdn3/linkh.php"
 ];
 
 async function fetchM3U8(url) {
