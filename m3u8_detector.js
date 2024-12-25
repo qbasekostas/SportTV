@@ -35,6 +35,14 @@ async function fetchM3U8(url) {
 
         if (m3u8Url) {
             const response = await page.goto(m3u8Url);
+            const contentType = response.headers()['content-type'];
+            
+            if (contentType !== 'application/vnd.apple.mpegurl' && contentType !== 'application/x-mpegURL') {
+                console.log(`Invalid content type for URL: ${url}`);
+                await browser.close();
+                return null;
+            }
+
             const content = await response.text();
             await browser.close();
             return content;
