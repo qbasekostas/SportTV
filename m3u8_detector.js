@@ -52,10 +52,14 @@ async function fetchM3U8(url) {
             const response = await page.goto(m3u8Url);
             const contentType = response.headers()['content-type'];
 
-            if (contentType !== 'application/vnd.apple.mpegurl' && contentType !== 'application/x-mpegURL') {
-                console.log(`Invalid content type for URL: ${url}`);
-                await browser.close();
-                return null;
+            if (!contentType || contentType !== 'application/vnd.apple.mpegurl' && contentType !== 'application/x-mpegURL') {
+                if (!contentType && m3u8Url.endsWith('.m3u8')) {
+                    console.log(`Assuming valid M3U8 for URL: ${m3u8Url} with undefined content type`);
+                } else {
+                    console.log(`Invalid content type for URL: ${m3u8Url}`);
+                    await browser.close();
+                    return null;
+                }
             }
 
             const content = await response.text();
