@@ -22,6 +22,8 @@ async function fetchM3U8(url) {
 
     page.on('response', async (response) => {
         const url = response.url();
+        const contentType = response.headers()['content-type'];
+        console.log(`Network response URL: ${url}, Content-Type: ${contentType}`);
         if (url.endsWith('.m3u8')) {
             m3u8Url = url;
         }
