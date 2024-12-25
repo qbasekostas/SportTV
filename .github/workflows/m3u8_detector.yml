@@ -26,3 +26,9 @@ jobs:
 
     - name: Run M3U8 Detector
       run: npm start
+
+    - name: Upload results
+      uses: actions/upload-artifact@v2
+      with:
+        name: m3u8-results
+        path: m3u8_results.json
