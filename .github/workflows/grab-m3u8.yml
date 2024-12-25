@@ -1,0 +1,31 @@
+name: Grab M3U8 URLs
+
+on:
+  schedule:
+    - cron: '0 * * * *' # This runs the action hourly
+  workflow_dispatch: # Manually trigger the workflow
+
+jobs:
+  grab-m3u8:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get install -y jq
+
+      - name: Grab M3U8 URLs
+        run: |
+          URLS=("https://sporthd.live/channel/slg-Nova-Sports-Prime?l=0" "https://sporthd.live/channel/slg-Nova-Sports-1?l=0" "https://sporthd.live/channel/slg-Nova-Sports-2?l=0" "https://sporthd.live/channel/slg-Nova-Sports-3?l=0" "https://sporthd.live/channel/slg-Nova-Sports-4?l=0" "https://sporthd.live/channel/slg-Nova-Sports-5?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-1?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-2?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-3?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-4?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-5?l=0"  "https://sporthd.live/channel/slg-Cosmote-Sport-6?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-7?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-8?l=0" "https://sporthd.live/channel/slg-Cosmote-Sport-9?l=0")
+          for URL in "${URLS[@]}"; do
+            M3U8_URL=$(curl -s $URL | grep -oP '(?<=src=")[^"]*\.m3u8')
+            echo "M3U8_URL=$M3U8_URL" >> $GITHUB_ENV
+          done
+
+      - name: Print M3U8 URLs
+        run: |
+          for URL in "${URLS[@]}"; do
+            echo "The M3U8 URL for $URL is ${{ env.M3U8_URL }}"
+          done
