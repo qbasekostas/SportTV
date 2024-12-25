@@ -1,15 +1,13 @@
-name: M3U8 Detector
+name: M3U Playlist Generator
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  detect-m3u8:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,18 +15,18 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v2
       with:
-        node-version: '18'
+        node-version: '14'
 
     - name: Install dependencies
       run: npm install
 
-    - name: Run M3U8 Detector
+    - name: Run M3U Detector
       run: npm start
 
-    - name: Upload results
+    - name: Upload M3U playlist
       uses: actions/upload-artifact@v3
       with:
-        name: m3u8-results
-        path: m3u8_results.json
+        name: m3u-playlist
+        path: playlist.m3u
