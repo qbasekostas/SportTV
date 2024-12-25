@@ -4,10 +4,10 @@ const axios = require('axios');
 const m3u8Parser = require('m3u8-parser');
 
 const urls = [
-"https://s2watch.link/player.php?id=chftknovasportprime"
-"https://s2watch.link/player.php?id=chftknovasport1"
-"https://s2watch.link/player.php?id=chftknovasport2"
-"https://s2watch.link/player.php?id=chftknovasport3"
+"https://s2watch.link/player.php?id=chftknovasportprime",
+"https://s2watch.link/player.php?id=chftknovasport1",
+"https://s2watch.link/player.php?id=chftknovasport2",
+"https://s2watch.link/player.php?id=chftknovasport3",
 "https://s2watch.link/player.php?id=chftknovasport4",
 "https://s2watch.link/player.php?id=chftknovasport5",
 "https://s2watch.link/player.php?id=chftkcosmote1",
