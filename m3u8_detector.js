@@ -1,11 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const { execSync } = require('child_process');
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO_OWNER = 'qbasekostas';
-const REPO_NAME = 'SportTV';
 const FILE_PATH = 'playlist.m3u';
 
 const urls = [
@@ -87,23 +83,9 @@ async function saveAsM3UPlaylist(m3u8Urls) {
     console.log(`M3U playlist written to ${outputPath}`);
 }
 
-async function commitAndPushChanges() {
-    // Configure Git
-    execSync('git config --global user.email "your-email@example.com"');
-    execSync('git config --global user.name "your-username"');
-
-    // Update the remote URL if it already exists
-    execSync(`git remote set-url origin https://qbasekostas:${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
-
-    execSync('git add .');
-    execSync('git commit -m "Add M3U playlist"');
-    execSync('git push -u origin main --force');
-}
-
 async function main() {
     const m3u8Urls = await detectM3U8();
     await saveAsM3UPlaylist(m3u8Urls);
-    await commitAndPushChanges();
 }
 
 main().catch(error => {
