@@ -93,7 +93,7 @@ async function commitAndPushChanges() {
     execSync('git config --global user.name "your-username"');
 
     // Update the remote URL if it already exists
-    execSync(`git remote set-url origin https://${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
+    execSync(`git remote set-url origin https://qbasekostas:${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
 
     execSync('git add .');
     execSync('git commit -m "Add M3U playlist"');
