@@ -26,9 +26,15 @@ def find_m3u8_url(url):
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
+        # Print the entire HTML content for debugging purposes
+        print(f"HTML content for {url}:\n{soup.prettify()}\n")
+        # Look for <source> tags with src attributes ending in .m3u8
         m3u8_url = soup.find('source', src=True)
         if m3u8_url and m3u8_url['src'].endswith('.m3u8'):
             return m3u8_url['src']
+        else:
+            # Debugging output if no <source> tag with .m3u8 was found
+            print(f"No <source> tag with .m3u8 found in {url}")
     except requests.RequestException as e:
         print(f"Error fetching {url}: {e}")
     return None
