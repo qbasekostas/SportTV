@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer');
-const m3u8 = require('m3u8');
+const { execSync } = require('child_process');
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = 'qbasekostas';
+const REPO_NAME = 'SportTV';
+const FILE_PATH = 'playlist.m3u';
 
 const urls = [
     "https://foothubhd.org/cdn3/linka.php",
@@ -49,20 +54,6 @@ async function fetchM3U8(url) {
         }
 
         if (m3u8Url) {
-            const response = await page.goto(m3u8Url);
-            const contentType = response.headers()['content-type'];
-
-            if (!contentType || contentType !== 'application/vnd.apple.mpegurl' && contentType !== 'application/x-mpegURL') {
-                if (!contentType && m3u8Url.endsWith('.m3u8')) {
-                    console.log(`Assuming valid M3U8 for URL: ${m3u8Url} with undefined content type`);
-                } else {
-                    console.log(`Invalid content type for URL: ${m3u8Url}`);
-                    await browser.close();
-                    return null;
-                }
-            }
-
-            const content = await response.text();
             await browser.close();
             return m3u8Url;
         }
@@ -91,14 +82,31 @@ async function detectM3U8() {
 
 async function saveAsM3UPlaylist(m3u8Urls) {
     const playlistContent = '#EXTM3U\n' + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n');
-    const outputPath = path.join(__dirname, 'playlist.m3u');
+    const outputPath = path.join(__dirname, FILE_PATH);
     fs.writeFileSync(outputPath, playlistContent);
     console.log(`M3U playlist written to ${outputPath}`);
+}
+
+async function commitAndPushChanges() {
+    // Configure Git
+    execSync('git config --global user.email "your-email@example.com"');
+    execSync('git config --global user.name "your-username"');
+
+    // Check if .git directory exists to determine if it's an initialized repo
+    if (!fs.existsSync(path.join(__dirname, '.git'))) {
+        execSync('git init');
+        execSync(`git remote add origin https://${GITHUB_TOKEN}@github.com/${REPO_OWNER}/${REPO_NAME}.git`);
+    }
+
+    execSync('git add .');
+    execSync('git commit -m "Add M3U playlist"');
+    execSync('git push -u origin main --force');
 }
 
 async function main() {
     const m3u8Urls = await detectM3U8();
     await saveAsM3UPlaylist(m3u8Urls);
+    await commitAndPushChanges();
 }
 
 main().catch(error => {
