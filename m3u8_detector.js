@@ -38,7 +38,7 @@ async function fetchM3U8(url) {
         await page.goto(url, { waitUntil: 'networkidle2' });
 
         // Wait for a while to ensure all network requests are complete
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(5000); // Use the correct function for waiting
 
         if (m3u8Url) {
             const response = await page.goto(m3u8Url);
