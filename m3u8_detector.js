@@ -22,30 +22,35 @@ const urls = [
 ];
 
 async function fetchM3U8(url) {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+
+    let m3u8Url = null;
+
+    page.on('response', async (response) => {
+        const url = response.url();
+        if (url.endsWith('.m3u8')) {
+            m3u8Url = url;
+        }
+    });
+
     try {
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
         await page.goto(url, { waitUntil: 'networkidle2' });
 
-        const m3u8Url = await page.evaluate(() => {
-            let src = null;
-            document.querySelectorAll('source').forEach(source => {
-                if (source.src.endsWith('.m3u8')) {
-                    src = source.src;
-                }
-            });
-            return src;
-        });
-
-        await browser.close();
+        // Wait for a while to ensure all network requests are complete
+        await page.waitForTimeout(5000);
 
         if (m3u8Url) {
-            const response = await axios.get(m3u8Url);
-            return response.data;
+            const response = await page.goto(m3u8Url);
+            const content = await response.text();
+            await browser.close();
+            return content;
         }
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
     }
+
+    await browser.close();
     return null;
 }
 
