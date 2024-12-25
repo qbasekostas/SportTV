@@ -1,33 +1,44 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const cheerio = require('cheerio');
 const m3u8Parser = require('m3u8-parser');
 
 const urls = [
-"https://s2watch.link/player.php?id=chftknovasportprime",
-"https://s2watch.link/player.php?id=chftknovasport1",
-"https://s2watch.link/player.php?id=chftknovasport2",
-"https://s2watch.link/player.php?id=chftknovasport3",
-"https://s2watch.link/player.php?id=chftknovasport4",
-"https://s2watch.link/player.php?id=chftknovasport5",
-"https://s2watch.link/player.php?id=chftkcosmote1",
-"https://s2watch.link/player.php?id=chftkcosmote2",
-"https://s2watch.link/player.php?id=chftkcosmote3",
-"https://s2watch.link/player.php?id=chftkcosmote4",
-"https://s2watch.link/player.php?id=chftkcosmote5",
-"https://s2watch.link/player.php?id=chftkcosmote6",
-"https://s2watch.link/player.php?id=chftkcosmote7",
-"https://s2watch.link/player.php?id=chftkcosmote8",
-"https://s2watch.link/player.php?id=chftkcosmote9"
-    // Add more URLs as needed
+    "https://s2watch.link/player.php?id=chftknovasportprime",
+    "https://s2watch.link/player.php?id=chftknovasport1",
+    "https://s2watch.link/player.php?id=chftknovasport2",
+    "https://s2watch.link/player.php?id=chftknovasport3",
+    "https://s2watch.link/player.php?id=chftknovasport4",
+    "https://s2watch.link/player.php?id=chftknovasport5",
+    "https://s2watch.link/player.php?id=chftkcosmote1",
+    "https://s2watch.link/player.php?id=chftkcosmote2",
+    "https://s2watch.link/player.php?id=chftkcosmote3",
+    "https://s2watch.link/player.php?id=chftkcosmote4",
+    "https://s2watch.link/player.php?id=chftkcosmote5",
+    "https://s2watch.link/player.php?id=chftkcosmote6",
+    "https://s2watch.link/player.php?id=chftkcosmote7",
+    "https://s2watch.link/player.php?id=chftkcosmote8",
+    "https://s2watch.link/player.php?id=chftkcosmote9"
 ];
 
 async function fetchM3U8(url) {
     try {
         const response = await axios.get(url);
         const content = response.data;
-        if (content.trim().startsWith("#EXTM3U")) {
-            return content;
+        const $ = cheerio.load(content);
+        let m3u8Url = null;
+
+        $('source').each((i, elem) => {
+            const src = $(elem).attr('src');
+            if (src && src.endsWith('.m3u8')) {
+                m3u8Url = src;
+            }
+        });
+
+        if (m3u8Url) {
+            const m3u8Response = await axios.get(m3u8Url);
+            return m3u8Response.data;
         }
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
