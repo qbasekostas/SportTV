@@ -13,11 +13,14 @@ urls = [
 
 def fetch_m3u8_content(url):
     try:
-        response = requests.get(url)
+        response = requests.get(url, allow_redirects=True)
         response.raise_for_status()  # Check if the request was successful
         print(f"Fetching URL: {url}")
-        content_type = response.headers.get('Content-Type', '')
-        print(f"Content-Type: {content_type}")
+        print(f"Status Code: {response.status_code}")
+        print(f"Final URL after redirects: {response.url}")
+        print(f"Content-Type: {response.headers.get('Content-Type', '')}")
+        print(f"Response Text: {response.text[:200]}...")  # Print first 200 characters of the response text
+        
         if '#EXTM3U' in response.text:
             print(f"M3U8 content found for URL: {url}")
             return response.text
