@@ -14,7 +14,7 @@ urls = [
 def fetch_m3u8_content(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Τσεκάρει αν η αίτηση ήταν επιτυχής
+        response.raise_for_status()  # Check if the request was successful
         print(f"Fetching URL: {url}")
         if '#EXTM3U' in response.text:
             print(f"M3U8 content found for URL: {url}")
@@ -40,4 +40,4 @@ def main():
         print('No M3U8 content found in any URLs.')
 
 if __name__ == '__main__':
-    main()
+        main()
