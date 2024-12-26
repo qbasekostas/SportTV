@@ -1,10 +1,9 @@
-name: M3U Playlist Generator
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build:
@@ -14,27 +13,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Run M3U Detector
-      run: npm start
-
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Commit and Push changes
-      run: |
-        git config --global user.email "qbasekostas@yahoo.com"
-        git config --global user.name "qbasekostas"
-        git remote set-url origin git@github.com:qbasekostas/SportTV.git
-        git add .
-        git commit -m "Add M3U playlist"
-        git push -u origin main --force
+    # Add your subsequent steps here...
