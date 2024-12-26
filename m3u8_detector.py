@@ -1,8 +1,9 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
-import requests
 import time
+import requests
+import base64
 
 # List of URLs to search for M3U8 links
 urls = [
