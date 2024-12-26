@@ -1,4 +1,6 @@
 import requests
+import m3u8
+import os
 
 urls = [
     'https://foothubhd.org/cdn3/linka.php',
@@ -11,38 +13,41 @@ urls = [
     'https://foothubhd.org/cdn3/linkh.php',
 ]
 
-def fetch_m3u8_content(url):
+def fetch_and_download_m3u8(url):
     try:
-        response = requests.get(url, allow_redirects=True)
+        response = requests.get(url)
         response.raise_for_status()  # Check if the request was successful
         print(f"Fetching URL: {url}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Final URL after redirects: {response.url}")
-        print(f"Content-Type: {response.headers.get('Content-Type', '')}")
-        print(f"Response Text: {response.text[:200]}...")  # Print first 200 characters of the response text
-        
         if '#EXTM3U' in response.text:
             print(f"M3U8 content found for URL: {url}")
-            return response.text
+            m3u8_obj = m3u8.loads(response.text)
+            download_segments(m3u8_obj)
         else:
             print(f"No M3U8 content found for URL: {url}")
-            return None
     except requests.exceptions.RequestException as e:
         print(f"Error fetching URL: {url}, {e}")
-        return None
+
+def download_segments(m3u8_obj):
+    base_uri = m3u8_obj.base_uri
+    for segment in m3u8_obj.segments:
+        segment_url = segment.uri if segment.uri.startswith('http') else base_uri + segment.uri
+        download_segment(segment_url)
+
+def download_segment(url):
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        filename = os.path.basename(url)
+        with open(filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print(f"Downloaded segment: {filename}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading segment: {url}, {e}")
 
 def main():
-    playlist = ''
     for url in urls:
-        content = fetch_m3u8_content(url)
-        if content:
-            playlist += content + '\n'
-    if playlist:
-        with open('playlist.m3u', 'w') as file:
-            file.write(playlist)
-        print('M3U playlist written to playlist.m3u')
-    else:
-        print('No M3U8 content found in any URLs.')
+        fetch_and_download_m3u8(url)
 
 if __name__ == '__main__':
     main()
