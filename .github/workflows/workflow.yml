@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium selenium-wire requests blinker
+        pip install selenium selenium-wire requests blinker pyOpenSSL==23.0.0 cryptography==39.0.1
 
     - name: Run m3u8_detector script
       run: python m3u8_detector.py
