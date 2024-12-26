@@ -37,5 +37,6 @@ jobs:
 
     - name: Enable step debugging
       if: ${{ always() }}
+      run: echo "Step debugging enabled"
       env:
         ACTIONS_STEP_DEBUG: true
