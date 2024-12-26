@@ -32,3 +32,8 @@ jobs:
       with:
         name: m3u8-playlist
         path: playlist.m3u
+
+    - name: Enable step debugging
+      if: ${{ always() }}
+      env:
+        ACTIONS_STEP_DEBUG: true
