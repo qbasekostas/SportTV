@@ -34,7 +34,6 @@ async function fetchM3U8(url) {
         // Wait for a while to ensure all network requests are complete
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        // If no m3u8 URL was found through network responses, check the page content
         if (!m3u8Url) {
             const pageContent = await page.content();
             const regex = /(http[s]?:\/\/[^\s]*\.m3u8)/g;
@@ -48,9 +47,10 @@ async function fetchM3U8(url) {
         return m3u8Url;
     } catch (error) {
         console.error(`Error fetching URL ${url}:`, error);
-        await browser.close();
-        return null;
     }
+
+    await browser.close();
+    return null;
 }
 
 async function detectM3U8() {
