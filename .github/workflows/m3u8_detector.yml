@@ -32,8 +32,8 @@ jobs:
 
     - name: Commit and Push changes
       run: |
-        git config --global user.email "your-email@example.com"
-        git config --global user.name "your-username"
+        git config --global user.email "qbasekostas@yahoo.com"
+        git config --global user.name "qbasekostas"
         git remote set-url origin git@github.com:qbasekostas/SportTV.git
         git add .
         git commit -m "Add M3U playlist"
