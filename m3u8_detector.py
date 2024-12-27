@@ -7,7 +7,14 @@ import base64
 
 # List of URLs to search for M3U8 links
 urls = [
-    'https://foothubhd.org/cdn3/linka.php'
+    'https://foothubhd.org/cdn3/linka.php',
+    'https://foothubhd.org/cdn3/linkb.php',
+    'https://foothubhd.org/cdn3/linkc.php',
+    'https://foothubhd.org/cdn3/linkd.php',
+    'https://foothubhd.org/cdn3/linke.php',
+    'https://foothubhd.org/cdn3/linkf.php',
+    'https://foothubhd.org/cdn3/linkg.php',
+    'https://foothubhd.org/cdn3/linkh.php'
 ]
 
 # GitHub repository details
