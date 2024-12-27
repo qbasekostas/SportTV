@@ -28,17 +28,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Install Firefox and GeckoDriver
+    - name: Install Chrome and ChromeDriver
       run: |
         sudo apt-get update
-        sudo apt-get install -y firefox
-        wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
-        tar -xzf geckodriver-v0.33.0-linux64.tar.gz
-        sudo mv geckodriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/geckodriver
+        sudo apt-get install -y google-chrome-stable
+        wget https://chromedriver.storage.googleapis.com/115.0.5790.102/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
 
-    - name: Set GeckoDriver environment variable
-      run: echo "GECKOWEBDRIVER=/usr/local/bin/geckodriver" >> $GITHUB_ENV
+    - name: Set ChromeDriver environment variable
+      run: echo "CHROMEDRIVER=/usr/local/bin/chromedriver" >> $GITHUB_ENV
 
     - name: Verify installed packages
       run: |
