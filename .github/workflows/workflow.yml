@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -35,6 +35,11 @@ jobs:
         wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
         tar -xzf geckodriver-v0.33.0-linux64.tar.gz
         sudo mv geckodriver /usr/local/bin/
+
+    - name: Verify installed packages
+      run: |
+        source venv/bin/activate
+        pip freeze
 
     - name: Run m3u8_detector script
       run: |
