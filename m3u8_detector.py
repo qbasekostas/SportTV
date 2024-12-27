@@ -1,7 +1,6 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
-import time
 
 # Set up Firefox options
 firefox_options = Options()
@@ -12,13 +11,8 @@ firefox_options.add_argument('--disable-dev-shm-usage')
 # Set up GeckoDriver service
 service = Service('/usr/local/bin/geckodriver')
 
-# Increase the timeout for Marionette port
-service.start()
-time.sleep(10)  # Wait for 10 seconds to ensure the service starts properly
-
-# Initialize Firefox WebDriver
-driver = webdriver.Firefox(service=service, options=firefox_options)
-
+# Initialize Firefox WebDriver with increased timeout
+driver = webdriver.Firefox(service=service, options=firefox_options, timeout=60)
 
 # List of URLs to search for M3U8 links
 urls = [
