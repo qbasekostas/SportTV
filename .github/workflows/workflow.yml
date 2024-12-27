@@ -36,10 +36,6 @@ jobs:
         tar -xzf geckodriver-v0.33.0-linux64.tar.gz
         sudo mv geckodriver /usr/local/bin/
 
-    - name: Patch tls.py to use SSLv23_METHOD
-      run: |
-        sed -i 's/SSLv2_METHOD/SSLv23_METHOD/' venv/lib/python3.11/site-packages/seleniumwire/thirdparty/mitmproxy/net/tls.py
-
     - name: Verify installed packages
       run: |
         source venv/bin/activate
