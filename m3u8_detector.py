@@ -20,7 +20,9 @@ urls = [
     'https://foothubhd.org/cdn3/linke.php',
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php'
+    'https://foothubhd.org/cdn3/linkh.php',
+    'https://foothubhd.org/cast/1/eurosport1gr.php',
+    'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
 # Initialize the Chrome options
