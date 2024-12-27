@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install selenium selenium-wire
+
+    - name: Install Firefox
+      run: sudo apt-get install -y firefox
+
+    - name: Install geckodriver
+      run: |
+        GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep 'tag_name' | cut -d\" -f4)
+        wget "https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz"
+        tar -xzf "geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz"
+        sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
+        geckodriver --version
+
+    - name: Run tests
+      run: |
+        source venv/bin/activate
+        python m3u8_detector.py
