@@ -1,6 +1,6 @@
 selenium==4.0.0
-selenium-wire==5.1.0  # Ensure this is the latest version
+selenium-wire==5.1.0  # Latest version
 requests==2.28.1
 blinker==1.4
 packaging
-pyOpenSSL==24.3.0  # Ensure this is the latest version
+pyOpenSSL==24.3.0  # Latest version
