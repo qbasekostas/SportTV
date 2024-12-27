@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
 
@@ -30,8 +31,8 @@ chrome_options.add_argument('--disable-dev-shm-usage')
 capabilities = DesiredCapabilities.CHROME
 capabilities["goog:loggingPrefs"] = {"performance": "ALL"}
 
-# Initialize the WebDriver with the correct path to ChromeDriver
-driver = webdriver.Chrome(options=chrome_options, desired_capabilities=capabilities)
+# Initialize the WebDriver using ChromeDriverManager
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options, desired_capabilities=capabilities)
 
 # Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
