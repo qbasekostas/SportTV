@@ -1,9 +1,18 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
-import time
-import requests
-import base64
+
+# Set up Firefox options
+firefox_options = Options()
+firefox_options.add_argument('--headless')  # Run in headless mode
+firefox_options.add_argument('--no-sandbox')
+firefox_options.add_argument('--disable-dev-shm-usage')
+
+# Set up GeckoDriver service
+service = Service('/usr/local/bin/geckodriver')
+
+# Initialize Firefox WebDriver
+driver = webdriver.Firefox(service=service, options=firefox_options)
 
 # List of URLs to search for M3U8 links
 urls = [
