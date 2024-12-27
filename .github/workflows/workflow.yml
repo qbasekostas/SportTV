@@ -7,6 +7,7 @@ on:
     - cron: '0 15 * * *'  # 17:00 EET
     - cron: '0 17 * * *'  # 19:00 EET
     - cron: '0 19 * * *'  # 21:00 EET
+    - cron: '0 21 * * *'  # 23:00 EET
   push:
     branches:
       - main
