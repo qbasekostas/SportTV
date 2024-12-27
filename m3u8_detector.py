@@ -1,6 +1,7 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import time
 
 # List of URLs to search for M3U8 links
@@ -26,7 +27,16 @@ geckodriver_path = '/usr/local/bin/geckodriver'
 
 # Initialize the WebDriver with the correct path to GeckoDriver
 service = Service(geckodriver_path)
-driver = webdriver.Firefox(service=service, options=firefox_options, timeout=60)
+
+# Set desired capabilities to increase timeouts
+capabilities = DesiredCapabilities.FIREFOX.copy()
+capabilities['timeouts'] = {
+    'implicit': 30,  # Implicit wait time
+    'pageLoad': 60,  # Page load timeout
+    'script': 60     # Script timeout
+}
+
+driver = webdriver.Firefox(service=service, options=firefox_options, desired_capabilities=capabilities)
 
 # Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
