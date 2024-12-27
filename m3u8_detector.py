@@ -20,9 +20,7 @@ urls = [
     'https://foothubhd.org/cdn3/linke.php',
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php',
-    'https://foothubhd.org/cast/1/eurosport1gr.php',
-    'https://foothubhd.org/cast/1/eurosport2gr.php'
+    'https://foothubhd.org/cdn3/linkh.php'
 ]
 
 # Initialize the Chrome options
@@ -67,11 +65,17 @@ def find_m3u8_links(url):
 
 # Function to create a playlist file
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
+    # Names to exclude from the playlist
+    exclude_names = ['tracks-v1', 'tracks-a1']
+    
     # Get the full path of the file
     full_path = os.path.abspath(filename)
     with open(full_path, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for stream_name, link, referer in m3u8_links:
+            # Skip the excluded stream names
+            if stream_name in exclude_names:
+                continue
             file.write(f"#EXTINF:-1,{stream_name}\n")
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
             file.write(f"{link}\n")
