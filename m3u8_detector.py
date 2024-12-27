@@ -1,3 +1,4 @@
+import os
 import chromedriver_autoinstaller
 from seleniumwire import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -20,7 +21,8 @@ urls = [
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
     'https://foothubhd.org/cdn3/linkh.php',
-    'https://foothubhd.org/cast/1/eurosport1gr.php'
+    'https://foothubhd.org/cast/1/eurosport1gr.php',
+    'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
 # Initialize the Chrome options
@@ -64,12 +66,15 @@ def find_m3u8_links(url):
 
 # Function to create a playlist file
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
-    with open(filename, 'w', encoding='utf-8') as file:
+    # Get the full path of the file
+    full_path = os.path.abspath(filename)
+    with open(full_path, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for link, referer in m3u8_links:
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
             file.write(f"{link}\n")
     print(f"Playlist created: {filename}")
+    print(f"Full path of the playlist: {full_path}")
 
 # Main function to search all URLs and create a playlist
 def main():
