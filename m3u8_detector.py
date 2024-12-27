@@ -7,14 +7,7 @@ import base64
 
 # List of URLs to search for M3U8 links
 urls = [
-    'https://foothubhd.org/cdn3/linka.php',
-    'https://foothubhd.org/cdn3/linkb.php',
-    'https://foothubhd.org/cdn3/linkc.php',
-    'https://foothubhd.org/cdn3/linkd.php',
-    'https://foothubhd.org/cdn3/linke.php',
-    'https://foothubhd.org/cdn3/linkf.php',
-    'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php'
+    'https://foothubhd.org/cdn3/linka.php'
 ]
 
 # GitHub repository details
@@ -27,11 +20,8 @@ GITHUB_FILE_PATH = 'playlist.m3u8'  # The path in the repository where the file 
 firefox_options = Options()
 firefox_options.add_argument("--headless")  # Run in headless mode
 
-# Specify the path to the Firefox binary
-firefox_options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'  # Adjust this path if necessary
-
 # Path to the GeckoDriver
-geckodriver_path = r'C:\geckodriver\geckodriver.exe'
+geckodriver_path = '/usr/local/bin/geckodriver'
 
 # Initialize the WebDriver with the correct path to GeckoDriver
 service = Service(geckodriver_path)
