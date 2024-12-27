@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Specify the Ubuntu version
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
@@ -43,3 +43,14 @@ jobs:
       run: |
         source venv/bin/activate
         python m3u8_detector.py
+
+    - name: Commit and push playlist.m3u8
+      run: |
+        git config --global user.email "qbasekostas@yahoo.com"
+        git config --global user.name "qbasekostas"
+        cp /home/runner/work/SportTV/SportTV/playlist.m3u8 .
+        git add playlist.m3u8
+        git commit -m "Add playlist.m3u8"
+        git push
+      env:
+        ACTIONS_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
