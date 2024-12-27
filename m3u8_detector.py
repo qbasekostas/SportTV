@@ -27,6 +27,9 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")  # Run in headless mode
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--disable-gpu')
+chrome_options.add_argument('--disable-extensions')
+chrome_options.add_argument('--start-maximized')
 
 # Initialize the WebDriver with the correct path to ChromeDriver
 driver = webdriver.Chrome(options=chrome_options)
@@ -35,11 +38,12 @@ driver = webdriver.Chrome(options=chrome_options)
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-    time.sleep(10)  # Wait for the page to fully load
+    time.sleep(20)  # Increased wait time for the page to fully load
 
     # Extract M3U8 links and their Referer from the network requests
     m3u8_links = set()  # Use a set to store unique links
     for request in driver.requests:
+        print(f"Request URL: {request.url}")  # Print all request URLs for debugging
         if request.response and '.m3u8' in request.url:
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
@@ -70,6 +74,7 @@ def main():
     for url in urls:
         print(f"Searching M3U8 links in: {url}")
         m3u8_links = find_m3u8_links(url)
+        print(f"Found links: {m3u8_links}")  # Print found links for debugging
         all_m3u8_links.extend(m3u8_links)
     
     if all_m3u8_links:
