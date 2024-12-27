@@ -11,8 +11,8 @@ urls = [
 ]
 
 # GitHub repository details
-GITHUB_TOKEN = 'your_personal_access_token'  # Replace with your GitHub token
-GITHUB_REPO = 'qbasekostas/your_repository'  # Replace with your repository
+GITHUB_TOKEN = 'GITHUB_TOKEN'  # Replace with your GitHub token
+GITHUB_REPO = 'qbasekostas/SportTV '  # Replace with your repository
 GITHUB_BRANCH = 'main'  # Replace with the branch you want to upload to
 GITHUB_FILE_PATH = 'playlist.m3u8'  # The path in the repository where the file will be saved
 
