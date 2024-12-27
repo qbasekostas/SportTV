@@ -1,5 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import time
 import re
 
 # List of URLs to search for M3U8 links
@@ -16,31 +19,38 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Function to find M3U8 links in a web page using requests and BeautifulSoup
+# Initialize the Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+
+# Enable logging for network requests
+capabilities = DesiredCapabilities.CHROME
+capabilities["goog:loggingPrefs"] = {"performance": "ALL"}
+
+# Initialize the WebDriver with the correct path to ChromeDriver
+driver = webdriver.Chrome(options=chrome_options, desired_capabilities=capabilities)
+
+# Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
-    response = requests.get(url)
-    print(f"Response status code: {response.status_code}")
-    if response.status_code != 200:
-        print(f"Failed to retrieve the page: {url}")
-        return []
+    driver.get(url)
+    time.sleep(10)  # Wait for the page to fully load
 
-    # Parse the HTML content
-    soup = BeautifulSoup(response.content, 'html.parser')
+    # Extract M3U8 links from network requests
     m3u8_links = set()  # Use a set to store unique links
-
-    # Find all script tags
-    for script in soup.find_all('script'):
-        if script.string:
-            print(f"Script content: {script.string[:100]}...")  # Print the first 100 characters for debugging
-            # Search for M3U8 links in the script content
-            matches = re.findall(r'https?://[^\s]+\.m3u8', script.string)
-            for match in matches:
-                print(f"Found M3U8 link: {match}")
-                # Extract the referer if available
-                referer = url
-                stream_name = match.split('/')[-2]  # Extract the stream name from the URL
-                m3u8_links.add((stream_name, match, referer))
+    logs = driver.get_log("performance")
+    for log in logs:
+        message = log["message"]
+        # Parse log message as JSON
+        message_json = json.loads(message)["message"]
+        if message_json["method"] == "Network.responseReceived":
+            url = message_json["params"]["response"]["url"]
+            if ".m3u8" in url:
+                referer = message_json["params"]["response"]["requestHeaders"].get("Referer", "N/A")
+                stream_name = url.split('/')[-2]  # Extract the stream name from the URL
+                m3u8_links.add((stream_name, url, referer))
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
@@ -76,6 +86,9 @@ def main():
         create_playlist(unique_m3u8_links)
     else:
         print("No M3U8 links found.")
+
+    # Close the WebDriver
+    driver.quit()
 
 if __name__ == '__main__':
     main()
