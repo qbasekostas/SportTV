@@ -1,7 +1,11 @@
+import chromedriver_autoinstaller
 from seleniumwire import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
+
+# Automatically install the correct version of ChromeDriver
+chromedriver_autoinstaller.install()
 
 # List of URLs to search for M3U8 links
 urls = [
@@ -21,12 +25,8 @@ chrome_options.add_argument("--headless")  # Run in headless mode
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-# Path to the ChromeDriver
-chromedriver_path = '/usr/local/bin/chromedriver'
-
 # Initialize the WebDriver with the correct path to ChromeDriver
-service = Service(chromedriver_path)
-driver = webdriver.Chrome(service=service, options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 
 # Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
