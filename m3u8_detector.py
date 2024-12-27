@@ -20,6 +20,7 @@ urls = [
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     response = requests.get(url)
+    print(f"Response status code: {response.status_code}")
     if response.status_code != 200:
         print(f"Failed to retrieve the page: {url}")
         return []
@@ -31,9 +32,11 @@ def find_m3u8_links(url):
     # Find all script tags
     for script in soup.find_all('script'):
         if script.string:
+            print(f"Script content: {script.string[:100]}...")  # Print the first 100 characters for debugging
             # Search for M3U8 links in the script content
             matches = re.findall(r'https?://[^\s]+\.m3u8', script.string)
             for match in matches:
+                print(f"Found M3U8 link: {match}")
                 # Extract the referer if available
                 referer = url
                 stream_name = match.split('/')[-2]  # Extract the stream name from the URL
