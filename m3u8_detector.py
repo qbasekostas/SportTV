@@ -12,7 +12,7 @@ firefox_options.add_argument('--disable-dev-shm-usage')
 service = Service('/usr/local/bin/geckodriver')
 
 # Initialize Firefox WebDriver with increased timeout
-driver = webdriver.Firefox(service=service, options=firefox_options, timeout=60)
+driver = webdriver.Firefox(service=service, options=firefox_options)
 
 # List of URLs to search for M3U8 links
 urls = [
