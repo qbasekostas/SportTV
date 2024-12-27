@@ -1,10 +1,7 @@
 #EXTM3U
-#EXTINF:-1,EURO1GR
-#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO1GR/embed.html?token=798f1d08192028b8873b853278dc4d052bfede3a-0be97c8179838a55a24cfceacf89ccc4-1735339528-1735328728&remote=no_check_ip
-https://love2live.wideiptv.top/EURO1GR/index.fmp4.m3u8?token=798f1d08192028b8873b853278dc4d052bfede3a-0be97c8179838a55a24cfceacf89ccc4-1735339528-1735328728
-#EXTINF:-1,EURO1GR
-#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO1GR/embed.html?token=798f1d08192028b8873b853278dc4d052bfede3a-0be97c8179838a55a24cfceacf89ccc4-1735339528-1735328728&remote=no_check_ip
-https://love2live.wideiptv.top/EURO1GR/index.fmp4.m3u8?token=798f1d08192028b8873b853278dc4d052bfede3a-0be97c8179838a55a24cfceacf89ccc4-1735339528-1735328728
 #EXTINF:-1,EURO2GR
-#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO2GR/embed.html?token=c40857c1e8272300a25b974f6e34703912f9de81-ee8ce0294ff03a655f9bbe73cadbd507-1735339548-1735328748&remote=no_check_ip
-https://love2live.wideiptv.top/EURO2GR/index.fmp4.m3u8?token=c40857c1e8272300a25b974f6e34703912f9de81-ee8ce0294ff03a655f9bbe73cadbd507-1735339548-1735328748
+#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO2GR/embed.html?token=db1fd18bfa3be59e9bec8084188895ccadbd1f5e-9ab2854749b6116a787e38216735d23d-1735342816-1735332016&remote=no_check_ip
+https://love2live.wideiptv.top/EURO2GR/index.fmp4.m3u8?token=db1fd18bfa3be59e9bec8084188895ccadbd1f5e-9ab2854749b6116a787e38216735d23d-1735342816-1735332016
+#EXTINF:-1,EURO1GR
+#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO1GR/embed.html?token=aced159846bde91fdc5430b2bea8c473101b306a-be07d3e5c5af11876ea8f4c7cf70b13f-1735342797-1735331997&remote=no_check_ip
+https://love2live.wideiptv.top/EURO1GR/index.fmp4.m3u8?token=aced159846bde91fdc5430b2bea8c473101b306a-be07d3e5c5af11876ea8f4c7cf70b13f-1735342797-1735331997
