@@ -27,19 +27,12 @@ jobs:
         source venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
-        pip install selenium selenium-wire
+        pip install selenium selenium-wire chromedriver-autoinstaller
 
-    - name: Install Firefox
-      run: sudo apt-get install -y firefox
-
-    - name: Install geckodriver
+    - name: Install Google Chrome
       run: |
-        GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep 'tag_name' | cut -d\" -f4)
-        wget "https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz"
-        tar -xzf "geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz"
-        sudo mv geckodriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/geckodriver
-        geckodriver --version
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
 
     - name: Run tests
       run: |
