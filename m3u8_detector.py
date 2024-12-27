@@ -2,6 +2,9 @@ import chromedriver_autoinstaller
 from seleniumwire import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 # Automatically install the correct version of ChromeDriver
@@ -32,7 +35,15 @@ driver = webdriver.Chrome(options=chrome_options)
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-    time.sleep(10)  # Wait for the page to fully load
+
+    try:
+        # Wait for the page to fully load by waiting for a specific element to appear
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.TAG_NAME, 'body'))
+        )
+    except Exception as e:
+        print(f"Error loading page: {e}")
+        return []
 
     # Extract M3U8 links and their Referer from the network requests
     m3u8_links = []
