@@ -1,9 +1,12 @@
 from seleniumwire import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+import chromedriver_autoinstaller
 import time
 import re
-import os
+
+# Automatically install the correct version of ChromeDriver
+chromedriver_autoinstaller.install()
 
 # List of URLs to search for M3U8 links
 urls = [
@@ -19,20 +22,14 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Initialize the Firefox options
-firefox_options = Options()
-firefox_options.add_argument("--headless")  # Run in headless mode
+# Initialize the Chrome options
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Run in headless mode
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 
-# Specify the path to the Firefox binary if running on Windows
-if os.name == 'nt':  # Check if the OS is Windows
-    firefox_options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'  # Adjust this path if necessary
-
-# Path to the GeckoDriver
-geckodriver_path = r'C:\geckodriver\geckodriver.exe' if os.name == 'nt' else '/usr/local/bin/geckodriver'  # Adjust this path as necessary for Linux
-
-# Initialize the WebDriver with the correct path to GeckoDriver
-service = Service(geckodriver_path)
-driver = webdriver.Firefox(service=service, options=firefox_options)
+# Initialize the WebDriver with the correct path to ChromeDriver
+driver = webdriver.Chrome(options=chrome_options)
 
 # Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
@@ -43,7 +40,6 @@ def find_m3u8_links(url):
     # Extract M3U8 links and their Referer from the network requests
     m3u8_links = set()  # Use a set to store unique links
     for request in driver.requests:
-        print(f"Request URL: {request.url}")  # Print all request URLs for debugging
         if request.response and '.m3u8' in request.url:
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
