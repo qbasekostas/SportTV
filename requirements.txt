@@ -1,4 +1,4 @@
-selenium
-selenium-wire
-requests
-blinker
+selenium==4.0.0
+selenium-wire==4.5.4
+requests==2.28.1
+blinker==1.4
