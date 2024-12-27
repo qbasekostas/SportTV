@@ -1,5 +1,10 @@
 name: Run m3u8_detector
 
+# Προσθήκη του cron schedule για να εκτελείται κάθε 4 ώρες
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+
 on:
   push:
     branches:
