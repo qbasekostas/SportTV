@@ -26,7 +26,16 @@ jobs:
         python -m venv venv
         source venv/bin/activate
         pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install selenium requests beautifulsoup4
+
+    - name: Install ChromeDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-chromedriver
+
+    - name: Add Chrome to PATH
+      run: |
+        sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/local/bin/chromedriver
 
     - name: Run script
       run: |
