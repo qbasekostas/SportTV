@@ -61,4 +61,5 @@ jobs:
           git config --global user.name "qbasekostas"
           git add /home/runner/work/SportTV/SportTV/playlist.m3u8
           git commit -m "Add playlist.m3u8"
+          git pull --rebase  # Pull changes from remote
           git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
