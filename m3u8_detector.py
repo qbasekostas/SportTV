@@ -20,9 +20,7 @@ urls = [
     'https://foothubhd.org/cdn3/linke.php',
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php',
-    'https://foothubhd.org/cast/1/eurosport1gr.php',
-    'https://foothubhd.org/cast/1/eurosport2gr.php'
+    'https://foothubhd.org/cdn3/linkh.php'
 ]
 
 # Initialize the Chrome options
@@ -59,7 +57,8 @@ def find_m3u8_links(url):
         print(f"Request URL: {request.url}")  # Print all request URLs for debugging
         if request.response and '.m3u8' in request.url:
             referer = request.headers.get('Referer', 'N/A')
-            m3u8_links.append((request.url, referer))
+            stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
+            m3u8_links.append((stream_name, request.url, referer))
 
     print(f"Found {len(m3u8_links)} M3U8 links.")
     return m3u8_links
@@ -70,7 +69,8 @@ def create_playlist(m3u8_links, filename='playlist.m3u8'):
     full_path = os.path.abspath(filename)
     with open(full_path, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
-        for link, referer in m3u8_links:
+        for stream_name, link, referer in m3u8_links:
+            file.write(f"#EXTINF:-1,{stream_name}\n")
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
             file.write(f"{link}\n")
     print(f"Playlist created: {filename}")
