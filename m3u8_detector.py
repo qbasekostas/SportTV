@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import re
 
 # Automatically install the correct version of ChromeDriver
 chromedriver_autoinstaller.install()
@@ -54,29 +55,29 @@ def find_m3u8_links(url):
         return []
 
     # Extract M3U8 links and their Referer from the network requests
-    m3u8_links = []
+    m3u8_links = set()  # Use a set to store unique links
     for request in driver.requests:
         print(f"Request URL: {request.url}")  # Print all request URLs for debugging
         if request.response and '.m3u8' in request.url:
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
-            m3u8_links.append((stream_name, request.url, referer))
+            m3u8_links.add((stream_name, request.url, referer))
 
-    print(f"Found {len(m3u8_links)} M3U8 links.")
-    return m3u8_links
+    print(f"Found {len(m3u8_links)} unique M3U8 links.")
+    return list(m3u8_links)
 
 # Function to create a playlist file
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
-    # Names to exclude from the playlist
-    exclude_names = ['tracks-v1', 'tracks-a1']
+    # Pattern to exclude streams starting with "tracks-"
+    exclude_pattern = re.compile(r'^tracks-')
     
     # Get the full path of the file
     full_path = os.path.abspath(filename)
     with open(full_path, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for stream_name, link, referer in m3u8_links:
-            # Skip the excluded stream names
-            if stream_name in exclude_names:
+            # Skip the streams matching the exclude pattern
+            if exclude_pattern.match(stream_name):
                 continue
             file.write(f"#EXTINF:-1,{stream_name}\n")
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
@@ -93,7 +94,9 @@ def main():
         all_m3u8_links.extend(m3u8_links)
     
     if all_m3u8_links:
-        create_playlist(all_m3u8_links)
+        # Remove duplicates from the combined list
+        unique_m3u8_links = list(set(all_m3u8_links))
+        create_playlist(unique_m3u8_links)
     else:
         print("No M3U8 links found.")
 
