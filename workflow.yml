@@ -1,0 +1,47 @@
+name: Run m3u8_detector
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04  # Specify the Ubuntu version
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install Firefox and GeckoDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y firefox
+        wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
+        tar -xzf geckodriver-v0.33.0-linux64.tar.gz
+        sudo mv geckodriver /usr/local/bin/
+
+    - name: Verify installed packages
+      run: |
+        source venv/bin/activate
+        pip freeze
+
+    - name: Run m3u8_detector script
+      run: |
+        source venv/bin/activate
+        python m3u8_detector.py
