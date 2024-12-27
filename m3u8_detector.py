@@ -48,6 +48,7 @@ def find_m3u8_links(url):
     # Extract M3U8 links and their Referer from the network requests
     m3u8_links = []
     for request in driver.requests:
+        print(f"Request URL: {request.url}")  # Print all request URLs for debugging
         if request.response and '.m3u8' in request.url:
             referer = request.headers.get('Referer', 'N/A')
             m3u8_links.append((request.url, referer))
