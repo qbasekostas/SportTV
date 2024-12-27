@@ -43,6 +43,10 @@ def find_m3u8_links(url):
             EC.presence_of_element_located((By.TAG_NAME, 'body'))
         )
         time.sleep(10)  # Additional wait time to ensure all network requests are completed
+
+        # Execute JavaScript to trigger any dynamic content
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(5)  # Wait for additional content to load
     except Exception as e:
         print(f"Error loading page: {e}")
         return []
