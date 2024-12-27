@@ -38,9 +38,10 @@ def find_m3u8_links(url):
 
     try:
         # Wait for the page to fully load by waiting for a specific element to appear
-        WebDriverWait(driver, 20).until(
+        WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.TAG_NAME, 'body'))
         )
+        time.sleep(10)  # Additional wait time to ensure all network requests are completed
     except Exception as e:
         print(f"Error loading page: {e}")
         return []
