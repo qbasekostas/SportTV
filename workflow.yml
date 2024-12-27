@@ -36,6 +36,9 @@ jobs:
         tar -xzf geckodriver-v0.33.0-linux64.tar.gz
         sudo mv geckodriver /usr/local/bin/
 
+    - name: Set GeckoDriver environment variable
+      run: echo "GECKOWEBDRIVER=/usr/local/bin/geckodriver" >> $GITHUB_ENV
+
     - name: Verify installed packages
       run: |
         source venv/bin/activate
