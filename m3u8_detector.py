@@ -1,16 +1,9 @@
-import os
-import chromedriver_autoinstaller
 from seleniumwire import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
 import time
 import re
-
-# Automatically install the correct version of ChromeDriver
-chromedriver_autoinstaller.install()
+import os
 
 # List of URLs to search for M3U8 links
 urls = [
@@ -26,33 +19,26 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Initialize the Chrome options
-chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run in headless mode
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+# Initialize the Firefox options
+firefox_options = Options()
+firefox_options.add_argument("--headless")  # Run in headless mode
 
-# Initialize the WebDriver with the correct path to ChromeDriver
-driver = webdriver.Chrome(options=chrome_options)
+# Specify the path to the Firefox binary if running on Windows
+if os.name == 'nt':  # Check if the OS is Windows
+    firefox_options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'  # Adjust this path if necessary
+
+# Path to the GeckoDriver
+geckodriver_path = r'C:\geckodriver\geckodriver.exe' if os.name == 'nt' else '/usr/local/bin/geckodriver'  # Adjust this path as necessary for Linux
+
+# Initialize the WebDriver with the correct path to GeckoDriver
+service = Service(geckodriver_path)
+driver = webdriver.Firefox(service=service, options=firefox_options)
 
 # Function to find M3U8 links in a web page using network requests
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-
-    try:
-        # Wait for the page to fully load by waiting for a specific element to appear
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.TAG_NAME, 'body'))
-        )
-        time.sleep(10)  # Additional wait time to ensure all network requests are completed
-
-        # Execute JavaScript to trigger any dynamic content
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)  # Wait for additional content to load
-    except Exception as e:
-        print(f"Error loading page: {e}")
-        return []
+    time.sleep(10)  # Wait for the page to fully load
 
     # Extract M3U8 links and their Referer from the network requests
     m3u8_links = set()  # Use a set to store unique links
@@ -71,9 +57,7 @@ def create_playlist(m3u8_links, filename='playlist.m3u8'):
     # Pattern to exclude streams starting with "tracks-"
     exclude_pattern = re.compile(r'^tracks-')
     
-    # Get the full path of the file
-    full_path = os.path.abspath(filename)
-    with open(full_path, 'w', encoding='utf-8') as file:
+    with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for stream_name, link, referer in m3u8_links:
             # Skip the streams matching the exclude pattern
@@ -83,7 +67,6 @@ def create_playlist(m3u8_links, filename='playlist.m3u8'):
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
             file.write(f"{link}\n")
     print(f"Playlist created: {filename}")
-    print(f"Full path of the playlist: {full_path}")
 
 # Main function to search all URLs and create a playlist
 def main():
