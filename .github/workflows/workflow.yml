@@ -31,10 +31,11 @@ jobs:
     - name: Install Firefox and GeckoDriver
       run: |
         sudo apt-get update
-        sudo apt-get install -y firefox
+        sudo apt-get install -y firefox=115.0
         wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz
         tar -xzf geckodriver-v0.33.0-linux64.tar.gz
         sudo mv geckodriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/geckodriver
 
     - name: Set GeckoDriver environment variable
       run: echo "GECKOWEBDRIVER=/usr/local/bin/geckodriver" >> $GITHUB_ENV
