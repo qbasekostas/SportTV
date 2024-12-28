@@ -19,9 +19,8 @@ urls = [
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
     'https://foothubhd.org/cdn3/linkh.php',
-    'https://foothubhd.org/cast/1/eurosport1gr.php',
-    'https://foothubhd.org/cast/1/eurosport2gr.php'
-]
+    'https://s2watch.link/player.php?id=chftknovasportprime'
+   ]
 
 # Αρχικοποίηση επιλογών Chrome
 chrome_options = Options()
