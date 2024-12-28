@@ -29,6 +29,12 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Upgrade pip
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+
       - name: Install dependencies
         run: |
           python -m venv venv
@@ -36,12 +42,16 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Verify installation
+      run: |
+        source venv/bin/activate
+        pip show webdriver_manager
+        python -c "from webdriver_manager.chrome import ChromeDriverManager; print('webdriver_manager imported successfully')"
+
       - name: Install Chrome
         run: |
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-
-      - name: Install dependencies run: | python -m venv venv source venv/bin/activate pip install -r requirements.txt - name: Verify installation run: 
 
       - name: Run m3u8_detector script
         run: |
