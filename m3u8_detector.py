@@ -3,7 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
@@ -35,7 +37,13 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-    time.sleep(30)  # Increase wait time to ensure page is fully loaded
+
+    try:
+        # Wait for the body element to be present
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+    except TimeoutException:
+        print(f"Timeout while waiting for page to load: {url}")
+        return []
 
     # Extract M3U8 links from page content
     m3u8_links = set()  # Use a set to store unique links
