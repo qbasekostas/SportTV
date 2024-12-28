@@ -44,27 +44,32 @@ def find_m3u8_links(url):
         print(f"Timeout while waiting for page to load: {url}")
         return []
 
-    # Εξαγωγή M3U8 συνδέσμων από τις αιτήσεις δικτύου
+    # Εξαγωγή M3U8 συνδέσμων και των Referer από τις αιτήσεις δικτύου
     m3u8_links = set()  # Χρησιμοποιούμε set για να αποθηκεύσουμε μοναδικούς συνδέσμους
     for request in driver.requests:
         if request.response and '.m3u8' in request.url:
-            m3u8_links.add(request.url)
+            referer = request.headers.get('Referer', 'N/A')
+            stream_name = request.url.split('/')[-2]  # Εξαγωγή του ονόματος του stream από το URL
+            m3u8_links.add((stream_name, request.url, referer))
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
 
 # Συνάρτηση για δημιουργία αρχείου playlist
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
+    # Pattern για να αποκλείσουμε streams που ξεκινούν με "tracks-"
+    exclude_pattern = re.compile(r'^tracks-')
+    
     with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
-        for link in m3u8_links:
-# Extract M3U8 links and their Referer from the network requests
-    m3u8_links = set()  # Use a set to store unique links
-    for request in driver.requests:
-        if request.response and '.m3u8' in request.url:
-            referer = request.headers.get('Referer', 'N/A')
-            stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
-            m3u8_links.add((stream_name, request.url, referer))
+        for stream_name, link, referer in m3u8_links:
+            # Παραλείπουμε τα streams που ταιριάζουν με το pattern αποκλεισμού
+            if exclude_pattern.match(stream_name):
+                continue
+            file.write(f"#EXTINF:-1,{stream_name}\n")
+            file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
+            file.write(f"{link}\n")
+    print(f"Playlist created: {filename}")
 
 # Κύρια συνάρτηση για αναζήτηση όλων των URLs και δημιουργία playlist
 def main():
@@ -76,7 +81,7 @@ def main():
             all_m3u8_links.extend(m3u8_links)
         except Exception as e:
             print(f"An error occurred while searching {url}: {e}")
-    
+
     if all_m3u8_links:
         unique_m3u8_links = list(set(all_m3u8_links))
         create_playlist(unique_m3u8_links)
