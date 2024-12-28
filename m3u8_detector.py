@@ -45,13 +45,26 @@ def find_m3u8_links(url):
         print(f"Timeout while waiting for page to load: {url}")
         return []
 
-    # Εξαγωγή M3U8 συνδέσμων και των Referer από τις αιτήσεις δικτύου
     m3u8_links = set()  # Χρησιμοποιούμε set για να αποθηκεύσουμε μοναδικούς συνδέσμους
-    for request in driver.requests:
-        if request.response and ('.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl'):
-            referer = request.headers.get('Referer', 'N/A')
-            stream_name = request.url.split('/')[-2]  # Εξαγωγή του ονόματος του stream από το URL
-            m3u8_links.add((stream_name, request.url, referer))
+
+    # Αναζήτηση για HTML5 video elements
+    video_elements = driver.find_elements(By.TAG_NAME, 'video')
+    for video in video_elements:
+        sources = video.find_elements(By.TAG_NAME, 'source')
+        for source in sources:
+            src = source.get_attribute('src')
+            if src and ('.m3u8' in src):
+                referer = driver.current_url
+                stream_name = src.split('/')[-2]
+                m3u8_links.add((stream_name, src, referer))
+
+    if not m3u8_links:
+        print("No M3U8 links found in video elements. Checking network requests...")
+        for request in driver.requests:
+            if request.response and ('.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl'):
+                referer = request.headers.get('Referer', 'N/A')
+                stream_name = request.url.split('/')[-2]
+                m3u8_links.add((stream_name, request.url, referer))
 
     if not m3u8_links:
         print("No M3U8 links found in network requests. Here are the requests made:")
