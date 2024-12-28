@@ -58,8 +58,11 @@ def find_m3u8_links(url):
         for request in driver.requests:
             print(f"URL: {request.url}")
             print(f"Method: {request.method}")
-            print(f"Status Code: {request.response.status_code if request.response else 'No response'}")
-            print(f"Content-Type: {request.response.headers.get('Content-Type') if request.response else 'No response'}")
+            if request.response:
+                print(f"Status Code: {request.response.status_code}")
+                print(f"Content-Type: {request.response.headers.get('Content-Type')}")
+            else:
+                print("No response")
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
