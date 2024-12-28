@@ -34,7 +34,7 @@ capabilities["goog:loggingPrefs"] = {"performance": "ALL"}
 # Initialize the WebDriver using ChromeDriverManager
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options, desired_capabilities=capabilities)
 
-# Function to find M3U8 links in a web page using network requests
+# Function to find M3U8 links in a web page using network requests and page content
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
@@ -57,6 +57,11 @@ def find_m3u8_links(url):
     # Debugging: Print the logs to see what is being captured
     for log in logs:
         print(log)
+
+    # Additionally, search the page content for M3U8 links
+    page_source = driver.page_source
+    print(f"Page source of {url}:\n{page_source}")  # Print the HTML content for debugging
+    m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', page_source))
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
