@@ -35,7 +35,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-    time.sleep(20)  # Wait for the page to fully load
+    time.sleep(30)  # Increase wait time to ensure page is fully loaded
 
     # Extract M3U8 links from page content
     m3u8_links = set()  # Use a set to store unique links
