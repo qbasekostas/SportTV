@@ -6,10 +6,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
-import time
 import re
+import time
 
-# List of URLs to search for M3U8 links
+# Λίστα URLs για αναζήτηση M3U8 συνδέσμων
 urls = [
     'https://foothubhd.org/cdn3/linka.php',
     'https://foothubhd.org/cdn3/linkb.php',
@@ -23,29 +23,29 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Initialize the Chrome options
+# Αρχικοποίηση επιλογών Chrome
 chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
+chrome_options.add_argument("--headless")  # Τρέχει σε headless mode για CI/CD
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-# Initialize the WebDriver using ChromeDriverManager with selenium-wire
+# Αρχικοποίηση WebDriver χρησιμοποιώντας ChromeDriverManager με selenium-wire
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-# Function to find M3U8 links in a web page using page content
+# Συνάρτηση για εύρεση M3U8 συνδέσμων σε μια ιστοσελίδα χρησιμοποιώντας το περιεχόμενο της σελίδας και τις αιτήσεις δικτύου
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
 
     try:
-        # Wait for the body element to be present
+        # Αναμονή για το στοιχείο body για να βεβαιωθούμε ότι η σελίδα έχει φορτώσει πλήρως
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
     except TimeoutException:
         print(f"Timeout while waiting for page to load: {url}")
         return []
 
-    # Extract M3U8 links from network requests
-    m3u8_links = set()  # Use a set to store unique links
+    # Εξαγωγή M3U8 συνδέσμων από τις αιτήσεις δικτύου
+    m3u8_links = set()  # Χρησιμοποιούμε set για να αποθηκεύσουμε μοναδικούς συνδέσμους
     for request in driver.requests:
         if request.response and '.m3u8' in request.url:
             m3u8_links.add(request.url)
@@ -53,16 +53,20 @@ def find_m3u8_links(url):
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
 
-# Function to create a playlist file
+# Συνάρτηση για δημιουργία αρχείου playlist
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
     with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for link in m3u8_links:
-            file.write(f"#EXTINF:-1,{link}\n")
-            file.write(f"{link}\n")
-    print(f"Playlist created: {filename}")
+# Extract M3U8 links and their Referer from the network requests
+    m3u8_links = set()  # Use a set to store unique links
+    for request in driver.requests:
+        if request.response and '.m3u8' in request.url:
+            referer = request.headers.get('Referer', 'N/A')
+            stream_name = request.url.split('/')[-2]  # Extract the stream name from the URL
+            m3u8_links.add((stream_name, request.url, referer))
 
-# Main function to search all URLs and create a playlist
+# Κύρια συνάρτηση για αναζήτηση όλων των URLs και δημιουργία playlist
 def main():
     all_m3u8_links = []
     for url in urls:
