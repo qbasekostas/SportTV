@@ -9,14 +9,6 @@ import re
 
 # List of URLs to search for M3U8 links
 urls = [
-    'https://foothubhd.org/cdn3/linka.php',
-    'https://foothubhd.org/cdn3/linkb.php',
-    'https://foothubhd.org/cdn3/linkc.php',
-    'https://foothubhd.org/cdn3/linkd.php',
-    'https://foothubhd.org/cdn3/linke.php',
-    'https://foothubhd.org/cdn3/linkf.php',
-    'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php',
     'https://foothubhd.org/cast/1/eurosport1gr.php',
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
@@ -62,6 +54,15 @@ def find_m3u8_links(url):
     page_source = driver.page_source
     print(f"Page source of {url}:\n{page_source}")  # Print the HTML content for debugging
     m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', page_source))
+
+    # Check iframes for M3U8 links
+    iframes = driver.find_elements_by_tag_name('iframe')
+    for iframe in iframes:
+        driver.switch_to.frame(iframe)
+        iframe_source = driver.page_source
+        print(f"Iframe source:\n{iframe_source}")  # Print the iframe content for debugging
+        m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
+        driver.switch_to.default_content()
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
