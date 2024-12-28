@@ -1,4 +1,4 @@
-import json  # Προσθήκη της βιβλιοθήκης json
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -48,11 +48,11 @@ def find_m3u8_links(url):
         # Parse log message as JSON
         message_json = json.loads(message)["message"]
         if message_json["method"] == "Network.responseReceived":
-            url = message_json["params"]["response"]["url"]
-            if ".m3u8" in url:
+            request_url = message_json["params"]["response"]["url"]
+            if ".m3u8" in request_url:
                 referer = message_json["params"]["response"]["requestHeaders"].get("Referer", "N/A")
-                stream_name = url.split('/')[-2]  # Extract the stream name from the URL
-                m3u8_links.add((stream_name, url, referer))
+                stream_name = request_url.split('/')[-2]  # Extract the stream name from the URL
+                m3u8_links.add((stream_name, request_url, referer))
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
