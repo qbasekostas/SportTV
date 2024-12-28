@@ -40,6 +40,7 @@ def find_m3u8_links(url):
     try:
         # Αναμονή για το στοιχείο body για να βεβαιωθούμε ότι η σελίδα έχει φορτώσει πλήρως
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+        time.sleep(10)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
     except TimeoutException:
         print(f"Timeout while waiting for page to load: {url}")
         return []
@@ -51,6 +52,13 @@ def find_m3u8_links(url):
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]  # Εξαγωγή του ονόματος του stream από το URL
             m3u8_links.add((stream_name, request.url, referer))
+
+    if not m3u8_links:
+        print("No M3U8 links found in network requests. Here are the requests made:")
+        for request in driver.requests:
+            print(f"URL: {request.url}")
+            print(f"Method: {request.method}")
+            print(f"Status Code: {request.response.status_code if request.response else 'No response'}")
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
