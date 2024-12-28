@@ -1,7 +1,7 @@
 #EXTM3U
-#EXTINF:-1,ftknovasportprime
-#EXTVLCOPT:http-referrer=https://1qwebplay.xyz/
-https://top2.iosplayer.ru/tshttp/top2/ftknovasportprime/mono.m3u8?token=none
-#EXTINF:-1,ftknovasportprime
-#EXTVLCOPT:http-referrer=https://1qwebplay.xyz/
-https://mono2024.mizhls.ru/lb/ftknovasportprime/playlist.m3u8
+#EXTINF:-1,EURO1GR
+#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO1GR/embed.html?token=54344f02199a56ac0377152c4edcdf3c68af41de-dafa231fe3d55d6f938ba305b27c72db-1735426510-1735415710&remote=no_check_ip
+https://love2live.wideiptv.top/EURO1GR/index.fmp4.m3u8?token=54344f02199a56ac0377152c4edcdf3c68af41de-dafa231fe3d55d6f938ba305b27c72db-1735426510-1735415710
+#EXTINF:-1,EURO2GR
+#EXTVLCOPT:http-referrer=https://love2live.wideiptv.top/EURO2GR/embed.html?token=6b649ae43bd8d8ef6bd6f17e30ca439db5f102b4-c61059566ce1c4e2aaa5295a06c6023d-1735426528-1735415728&remote=no_check_ip
+https://love2live.wideiptv.top/EURO2GR/index.fmp4.m3u8?token=6b649ae43bd8d8ef6bd6f17e30ca439db5f102b4-c61059566ce1c4e2aaa5295a06c6023d-1735426528-1735415728
