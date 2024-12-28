@@ -58,6 +58,8 @@ def find_m3u8_links(url):
     search_iframes()
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
+    if not m3u8_links:
+        print(f"Page source for debugging:\n{page_source[:1000]}...")  # Print first 1000 characters for debugging
     return list(m3u8_links)
 
 # Function to create a playlist file
