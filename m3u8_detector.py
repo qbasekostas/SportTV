@@ -10,9 +10,11 @@ import time
 import re
 
 # capabilities 
-capabilities = { "browserName": "chrome",
+capabilities = { 
+  "browserName": "chrome",
                 "browserVersion": "latest",
-                "platformName": "any" }
+                "platformName": "any" 
+}
 
 # List of URLs to search for M3U8 links
 urls = [
@@ -30,7 +32,7 @@ urls = [
 
 # Initialize the Chrome options
 chrome_options = Options()
-chrome_options.set_capability("capabilities", capabilities)
+chrome_options.set_capability("goog:chromeOptions", capabilities)
 chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
