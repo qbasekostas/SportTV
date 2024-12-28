@@ -5,3 +5,4 @@ blinker==1.4
 packaging
 pyOpenSSL==24.3.0  # Latest version
 beautifulsoup4
+webdriver_manager
