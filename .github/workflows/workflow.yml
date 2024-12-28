@@ -16,51 +16,56 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
 
-      - name: Upgrade pip
+    - name: Create and activate virtual environment
       run: |
         python -m venv venv
         source venv/bin/activate
+
+    - name: Upgrade pip
+      run: |
+        source venv/bin/activate
         pip install --upgrade pip
 
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies from requirements.txt
+      run: |
+        source venv/bin/activate
+        pip install -r requirements.txt
 
-     - name: Verify webdriver_manager installation
+    - name: Install webdriver_manager
+      run: |
+        source venv/bin/activate
+        pip install webdriver_manager
+
+    - name: Verify webdriver_manager installation
       run: |
         source venv/bin/activate
         pip show webdriver_manager || echo "webdriver_manager not found"
+
+    - name: List installed packages
+      run: |
+        source venv/bin/activate
+        pip list
 
     - name: Verify webdriver_manager import
       run: |
         source venv/bin/activate
         python -c "from webdriver_manager.chrome import ChromeDriverManager; print('webdriver_manager imported successfully')" || echo "webdriver_manager import failed"
 
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
-      - name: Run m3u8_detector script
-        run: |
-          source venv/bin/activate
-          python m3u8_detector.py
+    - name: Run Python script
+      run: |
+        source venv/bin/activate
+        python m3u8_detector.py
 
       - name: Commit and push playlist.m3u8
         env:
