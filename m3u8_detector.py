@@ -9,12 +9,21 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
 
-# capabilities 
-capabilities = { 
-  "browserName": "chrome",
-                "browserVersion": "latest",
-                "platformName": "any" 
+# Ορισμός των capabilities μέσω του chrome_options
+chrome_options = Options()
+capabilities = {
+    "browserName": "chrome",
+    "browserVersion": "latest",
+    "platformName": "any"
 }
+for key, value in capabilities.items():
+    chrome_options.set_capability(key, value)
+  chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
 
 # List of URLs to search for M3U8 links
 urls = [
@@ -30,19 +39,9 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Initialize the Chrome options
-chrome_options = Options()
-chrome_options.set_capability("goog:chromeOptions", capabilities)
-chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-
 # Enable logging for network requests
 capabilities = DesiredCapabilities.CHROME
 capabilities["goog:loggingPrefs"] = {"performance": "ALL"}
-
-# Initialize the WebDriver using ChromeDriverManager
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options, desired_capabilities=capabilities)
 
 # Function to find M3U8 links in a web page using network requests and page content
 def find_m3u8_links(url):
