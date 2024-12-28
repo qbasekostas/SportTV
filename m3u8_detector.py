@@ -9,6 +9,14 @@ import re
 
 # List of URLs to search for M3U8 links
 urls = [
+    'https://foothubhd.org/cdn3/linka.php',
+    'https://foothubhd.org/cdn3/linkb.php',
+    'https://foothubhd.org/cdn3/linkc.php',
+    'https://foothubhd.org/cdn3/linkd.php',
+    'https://foothubhd.org/cdn3/linke.php',
+    'https://foothubhd.org/cdn3/linkf.php',
+    'https://foothubhd.org/cdn3/linkg.php',
+    'https://foothubhd.org/cdn3/linkh.php',
     'https://foothubhd.org/cast/1/eurosport1gr.php',
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
@@ -30,7 +38,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
     driver.get(url)
-    time.sleep(10)  # Wait for the page to fully load
+    time.sleep(20)  # Wait for the page to fully load
 
     # Extract M3U8 links from network requests
     m3u8_links = set()  # Use a set to store unique links
@@ -56,13 +64,17 @@ def find_m3u8_links(url):
     m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', page_source))
 
     # Check iframes for M3U8 links
-    iframes = driver.find_elements_by_tag_name('iframe')
-    for iframe in iframes:
-        driver.switch_to.frame(iframe)
-        iframe_source = driver.page_source
-        print(f"Iframe source:\n{iframe_source}")  # Print the iframe content for debugging
-        m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
-        driver.switch_to.default_content()
+    def search_iframes():
+        iframes = driver.find_elements_by_tag_name('iframe')
+        for iframe in iframes:
+            driver.switch_to.frame(iframe)
+            iframe_source = driver.page_source
+            print(f"Iframe source:\n{iframe_source}")  # Print the iframe content for debugging
+            m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
+            search_iframes()  # Recursively search nested iframes
+            driver.switch_to.default_content()
+
+    search_iframes()
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
