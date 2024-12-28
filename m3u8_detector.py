@@ -12,7 +12,7 @@ import re
 # capabilities 
 capabilities = { "browserName": "chrome",
                 "browserVersion": "latest",
-                "platformName": "any"
+                "platformName": "any" }
 
 # List of URLs to search for M3U8 links
 urls = [
