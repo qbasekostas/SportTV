@@ -9,6 +9,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
 
+# capabilities 
+capabilities = { "browserName": "chrome",
+                "browserVersion": "latest",
+                "platformName": "any"
+
 # List of URLs to search for M3U8 links
 urls = [
     'https://foothubhd.org/cdn3/linka.php',
