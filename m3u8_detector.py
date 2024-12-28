@@ -54,6 +54,10 @@ def find_m3u8_links(url):
                 stream_name = request_url.split('/')[-2]  # Extract the stream name from the URL
                 m3u8_links.add((stream_name, request_url, referer))
 
+    # Debugging: Print the logs to see what is being captured
+    for log in logs:
+        print(log)
+
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
 
