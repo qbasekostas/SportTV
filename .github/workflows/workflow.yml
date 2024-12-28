@@ -1,6 +1,5 @@
 name: Run m3u8_detector
 
-# Προσθήκη του cron schedule για να εκτελείται συγκεκριμένες ώρες
 on:
   schedule:
     - cron: '0 13 * * *'  # 15:00 EET
@@ -45,7 +44,7 @@ jobs:
       - name: Verify installed packages
         run: |
           source venv/bin/activate
-          pip freeze
+          pip list
 
       - name: Run m3u8_detector script
         run: |
