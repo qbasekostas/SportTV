@@ -18,8 +18,7 @@ urls = [
     'https://foothubhd.org/cdn3/linke.php',
     'https://foothubhd.org/cdn3/linkf.php',
     'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php',
-    'https://s2watch.link/player.php?id=chftknovasportprime'
+    'https://foothubhd.org/cdn3/linkh.php'
    ]
 
 # Αρχικοποίηση επιλογών Chrome
