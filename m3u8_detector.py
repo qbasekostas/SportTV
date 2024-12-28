@@ -48,7 +48,7 @@ def find_m3u8_links(url):
     # Εξαγωγή M3U8 συνδέσμων και των Referer από τις αιτήσεις δικτύου
     m3u8_links = set()  # Χρησιμοποιούμε set για να αποθηκεύσουμε μοναδικούς συνδέσμους
     for request in driver.requests:
-        if request.response and request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl':
+        if request.response and ('.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl'):
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]  # Εξαγωγή του ονόματος του stream από το URL
             m3u8_links.add((stream_name, request.url, referer))
