@@ -54,13 +54,8 @@ def find_m3u8_links(url):
                 stream_name = request_url.split('/')[-2]  # Extract the stream name from the URL
                 m3u8_links.add((stream_name, request_url, referer))
 
-    # Debugging: Print the logs to see what is being captured
-    for log in logs:
-        print(log)
-
     # Additionally, search the page content for M3U8 links
     page_source = driver.page_source
-    print(f"Page source of {url}:\n{page_source}")  # Print the HTML content for debugging
     m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', page_source))
 
     # Check iframes for M3U8 links
@@ -69,7 +64,6 @@ def find_m3u8_links(url):
         for iframe in iframes:
             driver.switch_to.frame(iframe)
             iframe_source = driver.page_source
-            print(f"Iframe source:\n{iframe_source}")  # Print the iframe content for debugging
             m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
             search_iframes()  # Recursively search nested iframes
             driver.switch_to.default_content()
@@ -101,7 +95,6 @@ def main():
     for url in urls:
         print(f"Searching M3U8 links in: {url}")
         m3u8_links = find_m3u8_links(url)
-        print(f"Found links: {m3u8_links}")  # Print found links for debugging
         all_m3u8_links.extend(m3u8_links)
     
     if all_m3u8_links:
