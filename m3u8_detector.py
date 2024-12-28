@@ -1,5 +1,4 @@
-import json
-from selenium import webdriver
+from seleniumwire import webdriver  # Import from seleniumwire
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -30,7 +29,7 @@ chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
 chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 
-# Initialize the WebDriver using ChromeDriverManager
+# Initialize the WebDriver using ChromeDriverManager with selenium-wire
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 # Function to find M3U8 links in a web page using page content
@@ -45,42 +44,20 @@ def find_m3u8_links(url):
         print(f"Timeout while waiting for page to load: {url}")
         return []
 
-    # Extract M3U8 links from page content
+    # Extract M3U8 links from network requests
     m3u8_links = set()  # Use a set to store unique links
-    page_source = driver.page_source
-    m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', page_source))
-
-    # Check iframes for M3U8 links
-    def search_iframes():
-        iframes = driver.find_elements(By.TAG_NAME, 'iframe')
-        for iframe in iframes:
-            try:
-                driver.switch_to.frame(iframe)
-                iframe_source = driver.page_source
-                m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
-                search_iframes()  # Recursively search nested iframes
-                driver.switch_to.default_content()
-            except NoSuchElementException:
-                print("No element found in iframe")
-
-    search_iframes()
+    for request in driver.requests:
+        if request.response and '.m3u8' in request.url:
+            m3u8_links.add(request.url)
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
-    if not m3u8_links:
-        print(f"Page source for debugging:\n{page_source[:1000]}...")  # Print first 1000 characters for debugging
     return list(m3u8_links)
 
 # Function to create a playlist file
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
-    # Pattern to exclude streams starting with "tracks-"
-    exclude_pattern = re.compile(r'^tracks-')
-    
     with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for link in m3u8_links:
-            # Skip the streams matching the exclude pattern
-            if exclude_pattern.match(link):
-                continue
             file.write(f"#EXTINF:-1,{link}\n")
             file.write(f"{link}\n")
     print(f"Playlist created: {filename}")
@@ -97,13 +74,11 @@ def main():
             print(f"An error occurred while searching {url}: {e}")
     
     if all_m3u8_links:
-        # Remove duplicates from the combined list
         unique_m3u8_links = list(set(all_m3u8_links))
         create_playlist(unique_m3u8_links)
     else:
         print("No M3U8 links found.")
 
-    # Close the WebDriver
     driver.quit()
 
 if __name__ == '__main__':
