@@ -18,11 +18,11 @@ capabilities = {
 }
 for key, value in capabilities.items():
     chrome_options.set_capability(key, value)
-  chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--headless")  # Run in headless mode for CI/CD
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
 
 # List of URLs to search for M3U8 links
