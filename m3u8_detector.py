@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import re
@@ -60,13 +61,16 @@ def find_m3u8_links(url):
 
     # Check iframes for M3U8 links
     def search_iframes():
-        iframes = driver.find_elements_by_tag_name('iframe')
+        iframes = driver.find_elements(By.TAG_NAME, 'iframe')
         for iframe in iframes:
-            driver.switch_to.frame(iframe)
-            iframe_source = driver.page_source
-            m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
-            search_iframes()  # Recursively search nested iframes
-            driver.switch_to.default_content()
+            try:
+                driver.switch_to.frame(iframe)
+                iframe_source = driver.page_source
+                m3u8_links.update(re.findall(r'(https?://[^\s]+\.m3u8)', iframe_source))
+                search_iframes()  # Recursively search nested iframes
+                driver.switch_to.default_content()
+            except NoSuchElementException:
+                print("No element found in iframe")
 
     search_iframes()
 
@@ -94,8 +98,11 @@ def main():
     all_m3u8_links = []
     for url in urls:
         print(f"Searching M3U8 links in: {url}")
-        m3u8_links = find_m3u8_links(url)
-        all_m3u8_links.extend(m3u8_links)
+        try:
+            m3u8_links = find_m3u8_links(url)
+            all_m3u8_links.extend(m3u8_links)
+        except Exception as e:
+            print(f"An error occurred while searching {url}: {e}")
     
     if all_m3u8_links:
         # Remove duplicates from the combined list
