@@ -42,10 +42,14 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify installation
+     - name: Verify webdriver_manager installation
       run: |
         source venv/bin/activate
-        pip show webdriver_manager
+        pip show webdriver_manager || echo "webdriver_manager not found"
+
+        - name: Verify webdriver_manager import
+      run: |
+        source venv/bin/activate
         python -c "from webdriver_manager.chrome import ChromeDriverManager; print('webdriver_manager imported successfully')"
 
       - name: Install Chrome
