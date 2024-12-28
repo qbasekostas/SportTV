@@ -47,7 +47,7 @@ jobs:
         source venv/bin/activate
         pip show webdriver_manager || echo "webdriver_manager not found"
 
-        - name: Verify webdriver_manager import
+      - name: Verify webdriver_manager import
       run: |
         source venv/bin/activate
         python -c "from webdriver_manager.chrome import ChromeDriverManager; print('webdriver_manager imported successfully')"
