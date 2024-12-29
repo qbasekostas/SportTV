@@ -36,6 +36,11 @@ jobs:
         chmod +x geckodriver
         sudo mv geckodriver /usr/local/bin/
 
+    - name: Verify geckodriver installation
+      run: |
+        which geckodriver || echo "geckodriver not found"
+        geckodriver --version || echo "Failed to run geckodriver"
+
     - name: Create and activate virtual environment
       run: |
         python -m venv venv
