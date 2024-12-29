@@ -1,3 +1,12 @@
+import subprocess
+import sys
+
+# Εγκατάσταση των απαραίτητων πακέτων αν δεν είναι ήδη εγκατεστημένα
+def install_packages():
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyppeteer", "pyppeteer_stealth"])
+
+install_packages()
+
 import asyncio
 from pyppeteer import launch
 from pyppeteer_stealth import stealth
