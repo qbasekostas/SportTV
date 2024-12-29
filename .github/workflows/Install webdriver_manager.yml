@@ -1,5 +1,0 @@
-- name: Install webdriver_manager
-        run: |
-          source venv/bin/activate
-          pip install --user webdriver_manager
-
