@@ -1,10 +1,14 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
 import time
 import re
 import requests
+import subprocess
 
 # Λίστα URLs για ανίχνευση
 urls = [
@@ -24,11 +28,8 @@ urls = [
 firefox_options = Options()
 firefox_options.add_argument("--headless")  # Λειτουργία χωρίς GUI
 
-# Διαδρομή προς το εκτελέσιμο του geckodriver
-geckodriver_path = "/usr/local/bin/geckodriver"  # Προσαρμόστε τη διαδρομή αν χρειάζεται
-
 # WebDriver Service
-service = Service(executable_path=geckodriver_path)
+service = Service(executable_path=GeckoDriverManager().install())
 
 # Δημιουργία WebDriver
 driver = webdriver.Firefox(service=service, options=firefox_options)
@@ -50,14 +51,20 @@ headers = {
 # Λειτουργία για εύρεση M3U8 links
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
-    driver.get(url)
-    time.sleep(15)  # Αναμονή για φόρτωση σελίδας
+    try:
+        driver.get(url)
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.TAG_NAME, "video"))  # Αναμονή για φόρτωση video element
+        )
+    except Exception as e:
+        print(f"Failed to load {url}: {e}")
+        return []
 
     # Έλεγχος για M3U8 links στα requests
     m3u8_links = set()
     for request in driver.requests:
         if request.response and '.m3u8' in request.url:
-            referer = request.headers.get('Referer', 'N/A')
+            referer = request.headers.get('Referer', url)
             stream_name = request.url.split('/')[-2]  # Απόσπαση ονόματος ροής
             m3u8_links.add((stream_name, request.url, referer))
 
@@ -70,7 +77,7 @@ def find_m3u8_links(url):
             if response.status_code == 200:
                 print(f"Valid M3U8 link found: {match}")
                 stream_name = match.split('/')[-2]
-                m3u8_links.add((stream_name, match, headers.get("Referer", "N/A")))
+                m3u8_links.add((stream_name, match, headers.get("Referer", url)))
         except requests.RequestException as e:
             print(f"Error fetching M3U8 link: {match} - {e}")
 
