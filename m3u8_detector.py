@@ -1,11 +1,7 @@
 from seleniumwire import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
-import re
+from webdriver_manager.firefox import GeckoDriverManager
 
 # URLs για έλεγχο
 urls = [
@@ -21,17 +17,17 @@ urls = [
     'https://foothubhd.org/cast/1/eurosport2gr.php'
 ]
 
-# Ρυθμίσεις Firefox
-firefox_options = Options()
-firefox_options.add_argument("--headless")
-firefox_options.binary_location = r'C:\Program Files\Mozilla Firefox\firefox.exe'
-
-# Path για GeckoDriver
-geckodriver_path = r'C:\geckodriver\geckodriver.exe'
-service = Service(geckodriver_path)
-
 # Εκκίνηση WebDriver
 driver = webdriver.Firefox(service=service, options=firefox_options)
+
+# Ρυθμίσεις Firefox
+firefox_options = Options()
+firefox_options.add_argument("--headless")  # Εκτέλεση σε headless mode
+
+# Χρήση του GeckoDriverManager για αυτόματη διαχείριση του geckodriver
+service = Service(GeckoDriverManager().install())
+driver = webdriver.Firefox(service=service, options=firefox_options)
+
 
 def find_m3u8_links(url):
     print(f"Άνοιγμα URL: {url}")
