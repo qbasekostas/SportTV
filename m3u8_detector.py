@@ -51,7 +51,11 @@ def find_m3u8_links(url):
     for request in driver.requests:
         if request.response:
             content_type = request.response.headers.get('Content-Type', '')
-            if 'ritonimalis.xyz' in request.url and ('.m3u8' in request.url or 'application/vnd.apple.mpegurl' in content_type):
+            print(f"Request URL: {request.url}")
+            print(f"Method: {request.method}")
+            print(f"Status Code: {request.response.status_code}")
+            print(f"Content-Type: {content_type}")
+            if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in content_type:
                 referer = request.headers.get('Referer', 'N/A')
                 stream_name = request.url.split('/')[-2]
                 # Αποκλεισμός των συνδέσμων που ξεκινούν με "tracks-"
