@@ -3,6 +3,7 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 import time
 import re
+import requests
 
 # Λίστα URLs για ανίχνευση
 urls = [
@@ -31,6 +32,20 @@ service = Service(executable_path=geckodriver_path)
 # Δημιουργία WebDriver
 driver = webdriver.Firefox(service=service, options=firefox_options)
 
+# Headers για αιτήματα
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0",
+    "Accept": "*/*",
+    "Accept-Language": "el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3",
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Origin": "https://foothubhd.org",
+    "Referer": "https://foothubhd.org/",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "cross-site",
+    "TE": "trailers"
+}
+
 # Λειτουργία για εύρεση M3U8 links
 def find_m3u8_links(url):
     print(f"Opening URL: {url}")
@@ -47,8 +62,16 @@ def find_m3u8_links(url):
 
     # Έλεγχος του DOM για links
     page_source = driver.page_source
-    if '.m3u8' in page_source:
-        print("M3U8 link found in page source!")
+    matches = re.findall(r'https?://[^\s"]+\.m3u8', page_source)
+    for match in matches:
+        try:
+            response = requests.get(match, headers=headers)
+            if response.status_code == 200:
+                print(f"Valid M3U8 link found: {match}")
+                stream_name = match.split('/')[-2]
+                m3u8_links.add((stream_name, match, headers.get("Referer", "N/A")))
+        except requests.RequestException as e:
+            print(f"Error fetching M3U8 link: {match} - {e}")
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
