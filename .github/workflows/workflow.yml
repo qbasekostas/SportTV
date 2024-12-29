@@ -27,6 +27,16 @@ jobs:
       with:
         python-version: 3.11
 
+    - name: Install webdriver_manager
+      run: |
+        source venv/bin/activate
+        pip install webdriver_manager
+
+    - name: Verify webdriver_manager installation
+      run: |
+        source venv/bin/activate
+        pip show webdriver_manager || echo "webdriver_manager not found"
+
     - name: Add /usr/local/bin to PATH
       run: |
         echo "/usr/local/bin" >> $GITHUB_PATH
