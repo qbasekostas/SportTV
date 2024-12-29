@@ -6,3 +6,5 @@ packaging
 pyOpenSSL==24.3.0  # Latest version
 beautifulsoup4
 webdriver_manager
+pyppeteer
+pyppeteer_stealth
