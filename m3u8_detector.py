@@ -40,7 +40,7 @@ def find_m3u8_links(url):
     try:
         # Αναμονή για το στοιχείο body για να βεβαιωθούμε ότι η σελίδα έχει φορτώσει πλήρως
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-        time.sleep(10)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
+        time.sleep(15)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
     except TimeoutException:
         print(f"Timeout while waiting for page to load: {url}")
         return []
@@ -54,7 +54,7 @@ def find_m3u8_links(url):
             print(f"Method: {request.method}")
             print(f"Status Code: {request.response.status_code}")
             print(f"Content-Type: {request.response.headers.get('Content-Type')}")
-            if '.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl':
+            if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in request.response.headers.get('Content-Type', ''):
                 referer = request.headers.get('Referer', 'N/A')
                 stream_name = request.url.split('/')[-2]
                 m3u8_links.add((stream_name, request.url, referer))
@@ -70,7 +70,7 @@ def find_m3u8_links(url):
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
     # Pattern για να αποκλείσουμε streams που ξεκινούν με "tracks-"
     exclude_pattern = re.compile(r'^tracks-')
-    
+
     with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for stream_name, link, referer in m3u8_links:
