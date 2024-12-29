@@ -37,40 +37,20 @@ jobs:
         source venv/bin/activate
         pip install --upgrade pip
 
-    - name: Install webdriver_manager
+    - name: Install dependencies
       run: |
         source venv/bin/activate
-        pip install webdriver_manager
+        pip install -r requirements.txt
 
-    - name: Verify webdriver_manager installation
+    - name: Install geckodriver using webdriver_manager
       run: |
         source venv/bin/activate
-        pip show webdriver_manager || echo "webdriver_manager not found"
-
-    - name: Add /usr/local/bin to PATH
-      run: |
-        echo "/usr/local/bin" >> $GITHUB_PATH
-
-    - name: Install geckodriver
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget
-        LATEST_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep 'tag_name' | cut -d '"' -f 4)
-        wget https://github.com/mozilla/geckodriver/releases/download/$LATEST_VERSION/geckodriver-$LATEST_VERSION-linux64.tar.gz
-        tar -xvzf geckodriver-$LATEST_VERSION-linux64.tar.gz
-        chmod +x geckodriver
-        sudo mv geckodriver /usr/local/bin/
-        echo "export PATH=\$PATH:/usr/local/bin" >> $GITHUB_ENV
+        python -c "from webdriver_manager.firefox import GeckoDriverManager; print(GeckoDriverManager().install())"
 
     - name: Verify geckodriver installation
       run: |
         which geckodriver || echo "geckodriver not found"
         geckodriver --version || echo "Failed to run geckodriver"
-
-    - name: Install dependencies from requirements.txt
-      run: |
-        source venv/bin/activate
-        pip install -r requirements.txt
 
     - name: Run Python script
       run: |
