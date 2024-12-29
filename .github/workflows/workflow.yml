@@ -27,6 +27,16 @@ jobs:
       with:
         python-version: 3.11
 
+    - name: Create and activate virtual environment
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+
+    - name: Upgrade pip
+      run: |
+        source venv/bin/activate
+        pip install --upgrade pip
+
     - name: Install webdriver_manager
       run: |
         source venv/bin/activate
@@ -56,16 +66,6 @@ jobs:
       run: |
         which geckodriver || echo "geckodriver not found"
         geckodriver --version || echo "Failed to run geckodriver"
-
-    - name: Create and activate virtual environment
-      run: |
-        python -m venv venv
-        source venv/bin/activate
-
-    - name: Upgrade pip
-      run: |
-        source venv/bin/activate
-        pip install --upgrade pip
 
     - name: Install dependencies from requirements.txt
       run: |
