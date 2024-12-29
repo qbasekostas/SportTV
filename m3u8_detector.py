@@ -50,11 +50,12 @@ def find_m3u8_links(url):
     # Καταγραφή όλων των αιτήσεων δικτύου
     for request in driver.requests:
         if request.response:
+            content_type = request.response.headers.get('Content-Type', '')
             print(f"Request URL: {request.url}")
             print(f"Method: {request.method}")
             print(f"Status Code: {request.response.status_code}")
-            print(f"Content-Type: {request.response.headers.get('Content-Type')}")
-            if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in request.response.headers.get('Content-Type', ''):
+            print(f"Content-Type: {content_type}")
+            if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in content_type:
                 referer = request.headers.get('Referer', 'N/A')
                 stream_name = request.url.split('/')[-2]
                 m3u8_links.add((stream_name, request.url, referer))
