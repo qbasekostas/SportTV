@@ -18,7 +18,7 @@ urls = [
 ]
 
 # Εκκίνηση WebDriver
-driver = webdriver.Firefox(service=service, options=firefox_options)
+driver = webdriver.Firefox(service=Service, options=firefox_options)
 
 # Ρυθμίσεις Firefox
 firefox_options = Options()
