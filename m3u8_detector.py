@@ -49,22 +49,19 @@ def find_m3u8_links(url):
 
     # Καταγραφή όλων των αιτήσεων δικτύου
     for request in driver.requests:
-        if request.response and ('.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl'):
-            referer = request.headers.get('Referer', 'N/A')
-            stream_name = request.url.split('/')[-2]
-            m3u8_links.add((stream_name, request.url, referer))
-            print(f"Found M3U8 link: {request.url} with referer {referer}")
+        if request.response:
+            print(f"Request URL: {request.url}")
+            print(f"Method: {request.method}")
+            print(f"Status Code: {request.response.status_code}")
+            print(f"Content-Type: {request.response.headers.get('Content-Type')}")
+            if '.m3u8' in request.url or request.response.headers.get('Content-Type') == 'application/vnd.apple.mpegurl':
+                referer = request.headers.get('Referer', 'N/A')
+                stream_name = request.url.split('/')[-2]
+                m3u8_links.add((stream_name, request.url, referer))
+                print(f"Found M3U8 link: {request.url} with referer {referer}")
 
     if not m3u8_links:
-        print("No M3U8 links found in network requests. Here are some requests made:")
-        for request in driver.requests:
-            print(f"URL: {request.url}")
-            print(f"Method: {request.method}")
-            if request.response:
-                print(f"Status Code: {request.response.status_code}")
-                print(f"Content-Type: {request.response.headers.get('Content-Type')}")
-            else:
-                print("No response")
+        print("No M3U8 links found in network requests.")
 
     print(f"Found {len(m3u8_links)} unique M3U8 links.")
     return list(m3u8_links)
