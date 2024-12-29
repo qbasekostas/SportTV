@@ -24,7 +24,7 @@ async def find_m3u8_links(url):
 
     m3u8_links = set()
 
-    def intercept_request(request):
+    async def intercept_request(request):
         if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in request.headers.get('Content-Type', ''):
             referer = request.headers.get('Referer', 'N/A')
             stream_name = request.url.split('/')[-2]
@@ -35,7 +35,7 @@ async def find_m3u8_links(url):
         await request.continue_()
 
     await page.setRequestInterception(True)
-    page.on('request', intercept_request)
+    page.on('request', lambda req: asyncio.ensure_future(intercept_request(req)))
     
     try:
         await page.goto(url, {'waitUntil': 'networkidle2'})
