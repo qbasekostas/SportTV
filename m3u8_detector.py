@@ -58,8 +58,10 @@ def find_m3u8_links(url):
             if '.m3u8' in request.url or 'application/vnd.apple.mpegurl' in content_type:
                 referer = request.headers.get('Referer', 'N/A')
                 stream_name = request.url.split('/')[-2]
-                m3u8_links.add((stream_name, request.url, referer))
-                print(f"Found M3U8 link: {request.url} with referer {referer}")
+                # Αποκλεισμός των συνδέσμων που ξεκινούν με "tracks-"
+                if not re.match(r'^tracks-', stream_name):
+                    m3u8_links.add((stream_name, request.url, referer))
+                    print(f"Found M3U8 link: {request.url} with referer {referer}")
 
     if not m3u8_links:
         print("No M3U8 links found in network requests.")
@@ -69,15 +71,9 @@ def find_m3u8_links(url):
 
 # Συνάρτηση για δημιουργία αρχείου playlist
 def create_playlist(m3u8_links, filename='playlist.m3u8'):
-    # Pattern για να αποκλείσουμε streams που ξεκινούν με "tracks-"
-    exclude_pattern = re.compile(r'^tracks-')
-
     with open(filename, 'w', encoding='utf-8') as file:
         file.write("#EXTM3U\n")
         for stream_name, link, referer in m3u8_links:
-            # Παραλείπουμε τα streams που ταιριάζουν με το pattern αποκλεισμού
-            if exclude_pattern.match(stream_name):
-                continue
             file.write(f"#EXTINF:-1,{stream_name}\n")
             file.write(f"#EXTVLCOPT:http-referrer={referer}\n")
             file.write(f"{link}\n")
@@ -102,5 +98,5 @@ def main():
 
     driver.quit()
 
-if __name__ == '__main__':
+if __name__:
     main()
