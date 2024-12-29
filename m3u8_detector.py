@@ -24,7 +24,7 @@ firefox_options = Options()
 firefox_options.add_argument("--headless")  # Λειτουργία χωρίς GUI
 
 # Διαδρομή προς το εκτελέσιμο του geckodriver
-geckodriver_path = /usr/local/bin/  # Προσαρμόστε τη διαδρομή αν χρειάζεται
+geckodriver_path = '/usr/local/bin/geckodriver'  # Προσαρμόστε τη διαδρομή αν χρειάζεται
 
 # WebDriver Service
 service = Service(executable_path=geckodriver_path)
