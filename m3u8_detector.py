@@ -40,7 +40,7 @@ def find_m3u8_links(url):
     try:
         # Αναμονή για το στοιχείο body για να βεβαιωθούμε ότι η σελίδα έχει φορτώσει πλήρως
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-        time.sleep(10)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
+        time.sleep(15)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
     except TimeoutException:
         print(f"Timeout while waiting for page to load: {url}")
         return []
