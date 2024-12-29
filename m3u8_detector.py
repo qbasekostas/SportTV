@@ -45,10 +45,10 @@ async def find_m3u8_links(url):
 
     await page.setRequestInterception(True)
     page.on('request', lambda req: asyncio.ensure_future(intercept_request(req)))
-    
+
     try:
-        await page.goto(url, {'waitUntil': 'networkidle2'})
-        await asyncio.sleep(15)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
+        await page.goto(url, {'waitUntil': 'networkidle2', 'timeout': 60000})  # Αύξηση του χρονικού ορίου σε 60 δευτερόλεπτα
+        await asyncio.sleep(20)  # Πρόσθετη αναμονή για δυναμικά στοιχεία
     except Exception as e:
         print(f"An error occurred while loading {url}: {e}")
 
