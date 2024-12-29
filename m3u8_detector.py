@@ -26,7 +26,7 @@ firefox_options.add_argument("--headless")  # Εκτέλεση σε headless mod
 
 # Χρήση του GeckoDriverManager για αυτόματη διαχείριση του geckodriver
 service = Service(GeckoDriverManager().install())
-driver = webdriver.Firefox(service=service, options=firefox_options)
+driver = webdriver.Firefox(service=Service, options=firefox_options)
 
 
 def find_m3u8_links(url):
