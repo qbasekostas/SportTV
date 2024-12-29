@@ -52,16 +52,6 @@ jobs:
         source venv/bin/activate
         pip install -r requirements.txt
 
-    - name: Install webdriver_manager
-      run: |
-        source venv/bin/activate
-        pip install webdriver_manager
-
-    - name: Verify webdriver_manager installation
-      run: |
-        source venv/bin/activate
-        pip show webdriver_manager || echo "webdriver_manager not found"
-
     - name: List installed packages
       run: |
         source venv/bin/activate
