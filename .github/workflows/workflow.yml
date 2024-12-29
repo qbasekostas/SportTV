@@ -50,6 +50,7 @@ jobs:
         tar -xvzf geckodriver-$LATEST_VERSION-linux64.tar.gz
         chmod +x geckodriver
         sudo mv geckodriver /usr/local/bin/
+        echo "export PATH=\$PATH:/usr/local/bin" >> $GITHUB_ENV
 
     - name: Verify geckodriver installation
       run: |
