@@ -33,6 +33,7 @@ const fs = require('fs');
     // Log network responses
     page.on('response', async (response) => {
       const url = response.url();
+      console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
@@ -43,8 +44,8 @@ const fs = require('fs');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Replace waitForTimeout with a delay using setTimeout
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
+      // Increase the wait time to ensure all network requests complete
+      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
     }
@@ -59,7 +60,7 @@ const fs = require('fs');
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
     fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
     fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
   }
 
