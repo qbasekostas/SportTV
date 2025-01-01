@@ -1,102 +1,81 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
-const { execSync } = require('child_process');
+// ==UserScript==
+// @name         M3U8 Video Detector and Downloader
+// @version      1.4.1
+// @description  Automatically detect the m3u8 video of the page and download it completely.
+// @icon         https://tools.thatwind.com/favicon.png
+// @author       allFull
+// @namespace    https://tools.thatwind.com/
+// @homepage     https://tools.thatwind.com/tool/m3u8downloader
+// @match        *://foothubhd.org/cdn3/linka.php
+// @match        *://foothubhd.org/cdn3/linkb.php
+// @match        *://foothubhd.org/cdn3/linkc.php
+// @match        *://www.defendersportstreams.com/play/75
+// @grant        GM_xmlhttpRequest
+// @grant        GM.xmlHttpRequest
+// @grant        GM_download
+// @run-at       document-start
+// ==/UserScript==
 
-(async () => {
-  const targetUrls = [
-    "https://foothubhd.org/cdn3/linka.php",
-    "https://foothubhd.org/cdn3/linkb.php",
-    "https://foothubhd.org/cdn3/linkc.php",
-    "https://foothubhd.org/cdn3/linkd.php",
-    "https://foothubhd.org/cdn3/linke.php",
-    "https://foothubhd.org/cdn3/linkf.php",
-    "https://foothubhd.org/cdn3/linkg.php",
-    "https://foothubhd.org/cdn3/linkh.php",
-    "https://www.defendersportstreams.com/play/75"
-  ];
+(function () {
+    'use strict';
 
-  const m3u8Urls = [];
+    const { execSync } = require('child_process');
+    const fs = require('fs');
 
-  console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
-
-  const browser = await puppeteer.launch({ headless: true });
-
-  for (const targetUrl of targetUrls) {
-    const page = await browser.newPage();
-
-    // Enable request interception
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-      request.continue();
-    });
-
-    // Log network responses
-    page.on('response', async (response) => {
-      const url = response.url();
-      const headers = response.headers();
-      try {
-        console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
-        console.log("\x1b[34mResponse Headers:\x1b[0m", headers); // Log headers
-        if (url.endsWith('.m3u8') && headers['content-type'] === 'application/vnd.apple.mpegurl') {
-          m3u8Urls.push(url);
-          console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
-          console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
+    async function saveM3U8Urls(m3u8Urls) {
+        const playlistFile = 'playlist.m3u8';
+        if (fs.existsSync(playlistFile)) {
+            fs.unlinkSync(playlistFile);
+            console.log("Deleted old playlist.m3u8 file.");
         }
-      } catch (error) {
-        console.error("\x1b[31mError processing response:\x1b[0m", error);
-      }
-    });
 
-    try {
-      console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
-      await page.goto(targetUrl, { waitUntil: 'networkidle2' });
+        if (m3u8Urls.length) {
+            fs.writeFileSync(playlistFile, "#EXTM3U\n" + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n'));
+            console.log(`Total .m3u8 URLs found: ${m3u8Urls.length}`);
 
-      // Increase the wait time to ensure all network requests complete
-      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait for 30 seconds
-    } catch (error) {
-      console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
+            // Git operations
+            try {
+                console.log("Configuring git...");
+                execSync('git config --global user.email "qbasekostas@yahoo.com"');
+                execSync('git config --global user.name "qbasekostas"');
+
+                console.log("Adding changes to git...");
+                execSync('git add playlist.m3u8');
+
+                console.log("Committing changes...");
+                execSync('git commit -m "Update playlist.m3u8 with new entries"');
+
+                console.log("Pulling latest changes...");
+                execSync('git pull --rebase');
+
+                console.log("Pushing changes to repository...");
+                execSync('git push https://GITHUB_TOKEN@github.com/qbasekostas/SportTV.git');
+            } catch (error) {
+                console.error("Error during git operations:", error);
+            }
+        } else {
+            fs.writeFileSync(playlistFile, 'No .m3u8 URL found.');
+            console.log("No .m3u8 URL found.");
+        }
     }
 
-    await page.close();
-  }
+    // Main function to detect m3u8 URLs and save them
+    async function detectAndSaveM3U8Urls() {
+        const m3u8Urls = [];
 
-  console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls);
+        window.addEventListener('load', () => {
+            const requests = performance.getEntriesByType('resource');
+            requests.forEach(request => {
+                if (request.initiatorType === 'xmlhttprequest' && request.name.endsWith('.m3u8')) {
+                    m3u8Urls.push(request.name);
+                }
+            });
 
-  // Create or update playlist.m3u8 file
-  const playlistFile = 'playlist.m3u8';
-  if (fs.existsSync(playlistFile)) {
-    fs.unlinkSync(playlistFile);
-    console.log("Deleted old playlist.m3u8 file.");
-  }
+            if (m3u8Urls.length > 0) {
+                saveM3U8Urls(m3u8Urls);
+            }
+        });
+    }
 
-  if (m3u8Urls.length) {
-    fs.writeFileSync(playlistFile, "#EXTM3U\n" + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n'));
-    console.log(`\x1b[32m\u2705 Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
-  } else {
-    fs.writeFileSync(playlistFile, 'No .m3u8 URL found.');
-    console.log("\x1b[33m\u26a0\ufe0f No .m3u8 URL found.\x1b[0m");
-  }
-
-  await browser.close();
-
-  // Git operations
-  try {
-    console.log("\x1b[34mConfiguring git...\x1b[0m");
-    execSync('git config --global user.email "qbasekostas@yahoo.com"');
-    execSync('git config --global user.name "qbasekostas"');
-
-    console.log("\x1b[34mAdding changes to git...\x1b[0m");
-    execSync('git add playlist.m3u8');
-
-    console.log("\x1b[34mCommitting changes...\x1b[0m");
-    execSync('git commit -m "Update playlist.m3u8 with new entries"');
-
-    console.log("\x1b[34mPulling latest changes...\x1b[0m");
-    execSync('git pull --rebase');
-
-    console.log("\x1b[34mPushing changes to repository...\x1b[0m");
-    execSync('git push https://GITHUB_TOKEN@github.com/qbasekostas/SportTV.git');
-  } catch (error) {
-    console.error("\x1b[31mError during git operations:\x1b[0m", error);
-  }
+    detectAndSaveM3U8Urls();
 })();
