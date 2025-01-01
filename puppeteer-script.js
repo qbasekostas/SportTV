@@ -27,11 +27,7 @@ const { execSync } = require('child_process');
     // Enable request interception
     await page.setRequestInterception(true);
     page.on('request', (request) => {
-      if (request.resourceType() === 'preflight') {
-        request.abort();
-      } else {
-        request.continue();
-      }
+      request.continue();
     });
 
     // Log network responses
@@ -39,7 +35,6 @@ const { execSync } = require('child_process');
       const url = response.url();
       const headers = response.headers();
       try {
-        const responseBody = await response.text();
         console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
         console.log("\x1b[34mResponse Headers:\x1b[0m", headers); // Log headers
         if (url.endsWith('.m3u8') && headers['content-type'] === 'application/vnd.apple.mpegurl') {
@@ -48,7 +43,7 @@ const { execSync } = require('child_process');
           console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
         }
       } catch (error) {
-        console.error("\x1b[31mError loading response body:\x1b[0m", error);
+        console.error("\x1b[31mError processing response:\x1b[0m", error);
       }
     });
 
