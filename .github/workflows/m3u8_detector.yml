@@ -26,9 +26,6 @@ jobs:
     - name: Install dependencies
       run: npm install puppeteer
 
-    - name: Install yt-dlp
-      run: sudo pip install yt-dlp
-
     - name: Run Puppeteer script
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
