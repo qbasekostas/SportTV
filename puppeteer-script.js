@@ -15,7 +15,7 @@ const fs = require('fs');
 "https://foothubhd.org/cast/1/eurosport2gr.php"
   ];
 
-  const m3u8Urls = [];
+ const m3u8Urls = [];
 
   console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
