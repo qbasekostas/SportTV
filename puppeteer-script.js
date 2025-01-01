@@ -11,7 +11,8 @@ const { execSync } = require('child_process');
     "https://foothubhd.org/cdn3/linke.php",
     "https://foothubhd.org/cdn3/linkf.php",
     "https://foothubhd.org/cdn3/linkg.php",
-    "https://foothubhd.org/cdn3/linkh.php"
+    "https://foothubhd.org/cdn3/linkh.php",
+    "https://www.defendersportstreams.com/play/75"
   ];
 
   const m3u8Urls = [];
