@@ -32,8 +32,9 @@ const { execSync } = require('child_process');
     // Log network responses
     page.on('response', async (response) => {
       const url = response.url();
+      const headers = response.headers();
       console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
-      if (url.endsWith('.m3u8')) {
+      if (url.endsWith('.m3u8') && headers['content-type'] === 'application/vnd.apple.mpegurl') {
         m3u8Urls.push(url);
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
         console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
