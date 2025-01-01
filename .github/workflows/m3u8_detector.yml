@@ -28,8 +28,6 @@ jobs:
         npm install puppeteer
 
     - name: Run Puppeteer script
-      env:
-        TARGET_URL: "https://example.com"  # Αντικατέστησε το με το URL που θέλεις να παρακολουθείς
       run: |
         node puppeteer-script.js
 
