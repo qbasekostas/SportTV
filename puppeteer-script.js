@@ -45,7 +45,7 @@ const { execSync } = require('child_process');
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
       // Increase the wait time to ensure all network requests complete
-      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
+      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait for 30 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
     }
@@ -64,10 +64,10 @@ const { execSync } = require('child_process');
 
   if (m3u8Urls.length) {
     fs.writeFileSync(playlistFile, "#EXTM3U\n" + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n'));
-    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
+    console.log(`\x1b[32m\u2705 Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
   } else {
     fs.writeFileSync(playlistFile, 'No .m3u8 URL found.');
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
+    console.log("\x1b[33m\u26a0\ufe0f No .m3u8 URL found.\x1b[0m");
   }
 
   await browser.close();
