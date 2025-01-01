@@ -1,0 +1,49 @@
+name: Run m3u8_detector
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Puppeteer
+      run: |
+        npm install puppeteer
+
+    - name: Run Puppeteer script
+      env:
+        TARGET_URL: "https://example.com"  # Αντικατέστησε το με το URL που θέλεις να παρακολουθείς
+      run: |
+        node puppeteer-script.js
+
+    - name: Commit and push puppeteer_output.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.email "qbasekostas@yahoo.com"
+        git config --global user.name "qbasekostas"
+        if [ -f "puppeteer_output.txt" ]; then
+          git add puppeteer_output.txt
+          git commit -m "Update puppeteer_output.txt"
+          git pull --rebase || git rebase --abort
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        else
+          echo "puppeteer_output.txt not found, skipping commit."
+        fi
