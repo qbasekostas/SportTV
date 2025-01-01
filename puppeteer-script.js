@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+const { execSync } = require('child_process');
 
 (async () => {
   const targetUrls = [
@@ -56,14 +57,41 @@ const fs = require('fs');
 
   console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls);
 
-  // Save results to file for reference
+  // Create or update playlist.m3u8 file
+  const playlistFile = 'playlist.m3u8';
+  if (fs.existsSync(playlistFile)) {
+    fs.unlinkSync(playlistFile);
+    console.log("Deleted old playlist.m3u8 file.");
+  }
+
   if (m3u8Urls.length) {
+    fs.writeFileSync(playlistFile, "#EXTM3U\n" + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n'));
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
-    fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
-    fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
+    fs.writeFileSync(playlistFile, 'No .m3u8 URL found.');
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
   }
 
   await browser.close();
+
+  // Git operations
+  try {
+    console.log("\x1b[34mConfiguring git...\x1b[0m");
+    execSync('git config --global user.email "qbasekostas@yahoo.com"');
+    execSync('git config --global user.name "qbasekostas"');
+
+    console.log("\x1b[34mAdding changes to git...\x1b[0m");
+    execSync('git add playlist.m3u8');
+
+    console.log("\x1b[34mCommitting changes...\x1b[0m");
+    execSync('git commit -m "Update playlist.m3u8 with new entries"');
+
+    console.log("\x1b[34mPulling latest changes...\x1b[0m");
+    execSync('git pull --rebase');
+
+    console.log("\x1b[34mPushing changes to repository...\x1b[0m");
+    execSync('git push https://GITHUB_TOKEN@github.com/qbasekostas/SportTV.git');
+  } catch (error) {
+    console.error("\x1b[31mError during git operations:\x1b[0m", error);
+  }
 })();
