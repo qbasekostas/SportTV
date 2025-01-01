@@ -4,14 +4,9 @@ const { execSync } = require('child_process');
 
 (async () => {
   const targetUrls = [
-    'https://foothubhd.org/cdn3/linka.php',
-    'https://foothubhd.org/cdn3/linkb.php',
-    'https://foothubhd.org/cdn3/linkc.php',
-    'https://foothubhd.org/cdn3/linkd.php',
-    'https://foothubhd.org/cdn3/linke.php',
-    'https://foothubhd.org/cdn3/linkf.php',
-    'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php'
+    "https://foothubhd.org/cdn3/linka.php",
+    "https://foothubhd.org/cdn3/linkb.php",
+    "https://foothubhd.org/greekchannels/mega.html"
   ];
 
   const m3u8Urls = [];
@@ -26,6 +21,7 @@ const { execSync } = require('child_process');
     // Enable request interception
     await page.setRequestInterception(true);
     page.on('request', (request) => {
+      console.log("Request made:", request.url());
       request.continue();
     });
 
