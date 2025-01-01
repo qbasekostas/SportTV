@@ -37,6 +37,7 @@ const fs = require('fs');
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
+        console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
       }
     });
 
