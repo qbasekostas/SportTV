@@ -3,19 +3,19 @@ const fs = require('fs');
 
 (async () => {
   const targetUrls = [
-"https://foothubhd.org/cdn3/linka.php",
-"https://foothubhd.org/cdn3/linkb.php",
-"https://foothubhd.org/cdn3/linkc.php",
-"https://foothubhd.org/cdn3/linkd.php",
-"https://foothubhd.org/cdn3/linke.php",
-"https://foothubhd.org/cdn3/linkf.php",
-"https://foothubhd.org/cdn3/linkg.php",
-"https://foothubhd.org/cdn3/linkh.php",
-"https://foothubhd.org/cast/1/eurosport1gr.php",
-"https://foothubhd.org/cast/1/eurosport2gr.php"
+    "https://foothubhd.org/cdn3/linka.php",
+    "https://foothubhd.org/cdn3/linkb.php",
+    "https://foothubhd.org/cdn3/linkc.php",
+    "https://foothubhd.org/cdn3/linkd.php",
+    "https://foothubhd.org/cdn3/linke.php",
+    "https://foothubhd.org/cdn3/linkf.php",
+    "https://foothubhd.org/cdn3/linkg.php",
+    "https://foothubhd.org/cdn3/linkh.php",
+    "https://foothubhd.org/cast/1/eurosport1gr.php",
+    "https://foothubhd.org/cast/1/eurosport2gr.php"
   ];
 
- const m3u8Urls = [];
+  const m3u8Urls = [];
 
   console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
@@ -59,7 +59,7 @@ const fs = require('fs');
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
     fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
     fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
   }
 
