@@ -53,7 +53,7 @@ const fs = require('fs');
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
     fs.writeFileSync('playlist.m3u8', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
     fs.writeFileSync('playlist.m3u8', 'No .m3u8 URL found.');
   }
 
