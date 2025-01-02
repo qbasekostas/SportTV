@@ -12,7 +12,7 @@ const fs = require('fs');
 
   console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({ headless: false });
 
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
@@ -27,7 +27,8 @@ const fs = require('fs');
     page.on('response', async (response) => {
       const url = response.url();
       const status = response.status();
-      console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}\x1b[0m`); // Log all network responses with status
+      const contentType = response.headers()['content-type'];
+      console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}, Content-Type: ${contentType}\x1b[0m`); // Log all network responses with status and content type
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
@@ -39,7 +40,7 @@ const fs = require('fs');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Increase the wait time to ensure all network requests complete
+      // Wait for additional network requests
       await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
@@ -55,7 +56,7 @@ const fs = require('fs');
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
     fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
     fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
   }
 
