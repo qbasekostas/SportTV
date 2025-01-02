@@ -1,25 +1,3 @@
 #EXTM3U
-#EXTINF:-1,channel1
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linka.php
-https://nontis.ritonimalis.xyz/channel1/index.m3u8
-#EXTINF:-1,channel2
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkb.php
-https://nontis.ritonimalis.xyz/channel2/index.m3u8
-#EXTINF:-1,channel3
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkc.php
-https://nontis.ritonimalis.xyz/channel3/index.m3u8
-#EXTINF:-1,channel4
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkd.php
-https://nontis.ritonimalis.xyz/channel4/index.m3u8
-#EXTINF:-1,channel5
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linke.php
-https://nontis.ritonimalis.xyz/channel5/index.m3u8
-#EXTINF:-1,channel6
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkf.php
-https://nontis.ritonimalis.xyz/channel6/index.m3u8
-#EXTINF:-1,channel7
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkg.php
-https://nontis.ritonimalis.xyz/channel7/index.m3u8
-#EXTINF:-1,channel8
-#EXTVLCOPT:http-referrer=https://foothubhd.org/cdn3/linkh.php
-https://nontis.ritonimalis.xyz/channel8/index.m3u8
+#EXTINF:-1,No .m3u8 URL found.
+No .m3u8 URL found.
