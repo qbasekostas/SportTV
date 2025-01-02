@@ -3,9 +3,14 @@ const fs = require('fs'); // Εισαγωγή του File System module
 
 (async () => {
   const targetUrls = [
-    "https://foothubhd.org/greekchannels/mega.html",
-    "https://foothubhd.org/greekchannels/ant1.html",
-    "https://foothubhd.org/greekchannels/alphatv.html"
+    'https://foothubhd.org/cdn3/linka.php',
+    'https://foothubhd.org/cdn3/linkb.php',
+    'https://foothubhd.org/cdn3/linkc.php',
+    'https://foothubhd.org/cdn3/linkd.php',
+    'https://foothubhd.org/cdn3/linke.php',
+    'https://foothubhd.org/cdn3/linkf.php',
+    'https://foothubhd.org/cdn3/linkg.php',
+    'https://foothubhd.org/cdn3/linkh.php'
   ]; // Λίστα με τις URLs που θα επισκεφτούμε
 
   const m3u8Urls = []; // Πίνακας για αποθήκευση των m3u8 URLs που θα βρεθούν
