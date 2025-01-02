@@ -17,17 +17,14 @@ const fs = require('fs');
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
-    // Enable request interception
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-      request.continue();
-    });
+    // Enable DevTools Protocol
+    const client = await page.target().createCDPSession();
+    await client.send('Network.enable');
 
-    // Log network responses
-    page.on('response', async (response) => {
-      const url = response.url();
-      const status = response.status();
-      const contentType = response.headers()['content-type'];
+    client.on('Network.responseReceived', async (params) => {
+      const url = params.response.url;
+      const status = params.response.status;
+      const contentType = params.response.headers['content-type'];
       console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}, Content-Type: ${contentType}\x1b[0m`); // Log all network responses with status and content type
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
@@ -40,8 +37,8 @@ const fs = require('fs');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Wait for additional network requests
-      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
+      // Increase the wait time to ensure all network requests complete
+      await new Promise(resolve => setTimeout(resolve, 40000)); // Wait for 40 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
     }
