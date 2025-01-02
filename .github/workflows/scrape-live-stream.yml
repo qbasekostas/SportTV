@@ -1,17 +1,14 @@
-name: Run m3u8_detector
+name: Scrape Live Stream URLs
 
 on:
-  schedule:
-    - cron: '0 */2 * * *'
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
 
 jobs:
-  build:
+  scrape:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,23 +18,20 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '16'
 
-    - name: Install dependencies
+    - name: Install Puppeteer
       run: npm install puppeteer
 
     - name: Run Puppeteer script
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: node puppeteer-script.js
 
     - name: Commit and push changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.email "qbasekostas@yahoo.com"
         git config --global user.name "qbasekostas"
         git add playlist.m3u8
         git commit -m "Update playlist.m3u8 with new entries"
-        git pull --rebase || git rebase --abort
-        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
