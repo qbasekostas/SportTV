@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
-const { execSync } = require('child_process');
 
 (async () => {
   const targetUrls = [
@@ -11,7 +10,7 @@ const { execSync } = require('child_process');
 
   const m3u8Urls = [];
 
-  console.log("Starting Puppeteer...");
+  console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
   const browser = await puppeteer.launch({ headless: true });
 
@@ -24,64 +23,39 @@ const { execSync } = require('child_process');
       request.continue();
     });
 
-    // Log network responses and capture m3u8 URLs
+    // Log network responses
     page.on('response', async (response) => {
       const url = response.url();
+      console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
-        console.log("Found .m3u8 URL:", url);
+        console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
+        console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
       }
     });
 
     try {
-      console.log("Navigating to page:", targetUrl);
+      console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
       // Increase the wait time to ensure all network requests complete
-      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait for 30 seconds
+      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
     } catch (error) {
-      console.error("Error navigating to page:", error);
+      console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
     }
 
     await page.close();
   }
 
-  console.log("All network responses:", m3u8Urls);
+  console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls);
 
-  // Create or update playlist.m3u8 file
-  const playlistFile = 'playlist.m3u8';
-  if (fs.existsSync(playlistFile)) {
-    fs.unlinkSync(playlistFile);
-    console.log("Deleted old playlist.m3u8 file.");
-  }
-
+  // Save results to file for reference
   if (m3u8Urls.length) {
-    fs.writeFileSync(playlistFile, "#EXTM3U\n" + m3u8Urls.map(url => `#EXTINF:-1,${url}\n${url}`).join('\n'));
-    console.log(`Total .m3u8 URLs found: ${m3u8Urls.length}`);
-
-    // Git operations
-    try {
-      console.log("Configuring git...");
-      execSync('git config --global user.email "qbasekostas@yahoo.com"');
-      execSync('git config --global user.name "qbasekostas"');
-
-      console.log("Adding changes to git...");
-      execSync('git add playlist.m3u8');
-
-      console.log("Committing changes...");
-      execSync('git commit -m "Update playlist.m3u8 with new entries"');
-
-      console.log("Pulling latest changes...");
-      execSync('git pull --rebase');
-
-      console.log("Pushing changes to repository...");
-      execSync('git push https://GITHUB_TOKEN@github.com/qbasekostas/SportTV.git');
-    } catch (error) {
-      console.error("Error during git operations:", error);
-    }
+    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
+    fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
   } else {
-    fs.writeFileSync(playlistFile, 'No .m3u8 URL found.');
-    console.log("No .m3u8 URL found.");
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
+    fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
   }
 
   await browser.close();
