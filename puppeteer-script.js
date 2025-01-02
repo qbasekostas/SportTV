@@ -14,7 +14,7 @@ const path = require('path');
     'https://foothubhd.org/cdn3/linkh.php'
   ];
 
-  const m3u8Urls = [];
+  const m3u8Urls = new Set();
 
   console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
@@ -33,9 +33,8 @@ const path = require('path');
       const contentType = params.response.headers['content-type'];
       console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}, Content-Type: ${contentType}\x1b[0m`); // Log all network responses with status and content type
       if (url.endsWith('.m3u8') && !path.basename(url).startsWith('tracks-')) {
-        m3u8Urls.push({ url, referer: targetUrl });
+        m3u8Urls.add(JSON.stringify({ url, referer: targetUrl }));
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
-        console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
       }
     });
 
@@ -52,20 +51,20 @@ const path = require('path');
     await page.close();
   }
 
-  console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls);
+  console.log("\x1b[34mAll network responses:\x1b[0m", Array.from(m3u8Urls));
 
   // Sort URLs alphabetically
-  m3u8Urls.sort((a, b) => a.url.localeCompare(b.url));
+  const sortedUrls = Array.from(m3u8Urls).map(JSON.parse).sort((a, b) => a.url.localeCompare(b.url));
 
   // Clear the previous content of the playlist file
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
 
   // Save results to file for reference
-  if (m3u8Urls.length) {
-    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
-    m3u8Urls.forEach(entry => {
-      const name = path.basename(entry.url);
-      fs.appendFileSync('playlist.m3u8', `#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
+  if (sortedUrls.length) {
+    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${sortedUrls.length}\x1b[0m`);
+    sortedUrls.forEach(entry => {
+      const name = path.basename(entry.url, '.m3u8'); // Extract the name from the URL
+      fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${name}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
     });
   } else {
     console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
