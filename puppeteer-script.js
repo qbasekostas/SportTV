@@ -12,7 +12,7 @@ const fs = require('fs');
 
   console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: true });
 
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
@@ -51,10 +51,10 @@ const fs = require('fs');
   // Save results to file for reference
   if (m3u8Urls.length) {
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
-    fs.writeFileSync('puppeteer_output.txt', m3u8Urls.join('\n'));
+    fs.writeFileSync('playlist.m3u8', m3u8Urls.join('\n'));
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
-    fs.writeFileSync('puppeteer_output.txt', 'No .m3u8 URL found.');
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);
+    fs.writeFileSync('playlist.m3u8', 'No .m3u8 URL found.');
   }
 
   await browser.close();
