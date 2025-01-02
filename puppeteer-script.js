@@ -26,7 +26,8 @@ const fs = require('fs');
     // Log network responses
     page.on('response', async (response) => {
       const url = response.url();
-      console.log("\x1b[34mNetwork response URL:\x1b[0m", url); // Log all network responses
+      const status = response.status();
+      console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}\x1b[0m`); // Log all network responses with status
       if (url.endsWith('.m3u8')) {
         m3u8Urls.push(url);
         console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
