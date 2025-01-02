@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
 
 (async () => {
   const targetUrls = [
@@ -58,17 +59,40 @@ const path = require('path');
   // Sort the links alphabetically by streamName
   parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
+  const finalLinks = [];
+
+  // Analyze the content of each .m3u8 URL to find the best quality stream
+  for (const entry of parsedLinks) {
+    try {
+      const response = await axios.get(entry.url, { headers: { 'Referer': entry.referer } });
+      const lines = response.data.split('\n');
+
+      // Find the URL for the 1080p stream
+      let bestQualityUrl = entry.url;
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('1080p')) {
+          bestQualityUrl = new URL(lines[i + 1], entry.url).href; // Combine relative URL with base URL
+          break;
+        }
+      }
+
+      finalLinks.push({ ...entry, url: bestQualityUrl });
+    } catch (error) {
+      console.error("\x1b[31mError fetching .m3u8 content:\x1b[0m", error);
+    }
+  }
+
   // Clear the previous content of the playlist file
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
 
   // Save results to file for reference
-  if (parsedLinks.length) {
-    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
-    parsedLinks.forEach(entry => {
+  if (finalLinks.length) {
+    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${finalLinks.length}\x1b[0m`);
+    finalLinks.forEach(entry => {
       fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
     });
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Yellow warning for no results
     fs.appendFileSync('playlist.m3u8', '#EXTINF:-1,No .m3u8 URL found.\nNo .m3u8 URL found.');
   }
 
