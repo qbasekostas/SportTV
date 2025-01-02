@@ -4,9 +4,14 @@ const path = require('path');
 
 (async () => {
   const targetUrls = [
-    "https://foothubhd.org/greekchannels/mega.html",
-    "https://foothubhd.org/greekchannels/ant1.html",
-    "https://foothubhd.org/greekchannels/alphatv.html"
+    'https://foothubhd.org/cdn3/linka.php',
+    'https://foothubhd.org/cdn3/linkb.php',
+    'https://foothubhd.org/cdn3/linkc.php',
+    'https://foothubhd.org/cdn3/linkd.php',
+    'https://foothubhd.org/cdn3/linke.php',
+    'https://foothubhd.org/cdn3/linkf.php',
+    'https://foothubhd.org/cdn3/linkg.php',
+    'https://foothubhd.org/cdn3/linkh.php'
   ];
 
   const m3u8Links = new Set();
