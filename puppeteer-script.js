@@ -16,25 +16,25 @@ const path = require('path');
 
   const m3u8Links = new Set();
 
-  console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Μπλε κείμενο για πληροφορίες εκκίνησης
+  console.log("\x1b[34mStarting Puppeteer...\x1b[0m");
 
   const browser = await puppeteer.launch({ headless: true });
 
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
-    // Ενεργοποίηση του DevTools Protocol
+    // Enable DevTools Protocol
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
-      console.log("\x1b[36mNetwork response received:\x1b[0m", url); // Κυανό κείμενο για κάθε λήψη δικτυακής απόκρισης
+      console.log("\x1b[36mNetwork response received:\x1b[0m", url);
       if (url.endsWith('.m3u8') && url.includes('/tracks-v1a1')) {
         const referer = targetUrl;
         const streamName = url.split('/').slice(-2, -1)[0];
         m3u8Links.add(JSON.stringify({ streamName, url, referer }));
-        console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Πράσινο κείμενο για βρεθείσα URL
+        console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url);
       }
     });
 
@@ -42,10 +42,10 @@ const path = require('path');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Αύξηση του χρόνου αναμονής για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
-      await page.waitForTimeout(120000); // Αναμονή για 120 δευτερόλεπτα
+      // Increase wait time to ensure all network requests complete
+      await new Promise(resolve => setTimeout(resolve, 120000)); // Wait for 120 seconds
     } catch (error) {
-      console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Κόκκινο κείμενο για σφάλματα
+      console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
 
     await page.close();
@@ -53,25 +53,25 @@ const path = require('path');
 
   console.log("\x1b[34mAll network responses:\x1b[0m", Array.from(m3u8Links));
 
-  // Μετατροπή του set σε array και ανάλυση των JSON strings
+  // Convert the set to an array and parse the JSON strings
   const parsedLinks = Array.from(m3u8Links).map(JSON.parse);
 
-  // Ταξινόμηση των συνδέσμων αλφαβητικά κατά streamName
+  // Sort the links alphabetically by streamName
   parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
   const finalLinks = parsedLinks;
 
-  // Καθαρισμός του προηγούμενου περιεχομένου του αρχείου playlist
+  // Clear the previous content of the playlist file
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
 
-  // Αποθήκευση αποτελεσμάτων στο αρχείο για αναφορά
+  // Save results to file for reference
   if (finalLinks.length) {
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${finalLinks.length}\x1b[0m`);
     finalLinks.forEach(entry => {
       fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
     });
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Κίτρινη προειδοποίηση για κανένα αποτέλεσμα
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
     fs.appendFileSync('playlist.m3u8', '#EXTINF:-1,No .m3u8 URL found.\nNo .m3u8 URL found.\n');
   }
 
