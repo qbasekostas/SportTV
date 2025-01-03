@@ -4,11 +4,8 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   schedule:
-    - cron: '0 */2 * * *'  # Αυτό θα εκτελεί το workflow κάθε 2 ώρες
+    - cron: '0 */2 * * *'
 
 jobs:
   scrape:
@@ -23,7 +20,7 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Install Puppeteer
+    - name: Install dependencies
       run: npm install puppeteer
 
     - name: Run Puppeteer script
@@ -33,8 +30,8 @@ jobs:
       run: |
         git config --global user.email "qbasekostas@yahoo.com"
         git config --global user.name "qbasekostas"
-        git add playlist.m3u8
-        git commit -m "Update playlist.m3u8 with new entries"
+        git add playlist.m3u8 package.json package-lock.json
+        git commit -m "Update playlist.m3u8 with new entries" || echo "No changes to commit"
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
