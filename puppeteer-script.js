@@ -1,7 +1,6 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
 
 (async () => {
   const targetUrls = [
@@ -60,27 +59,6 @@ const axios = require('axios');
   parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
   const finalLinks = [];
-
-  // Analyze the content of each .m3u8 URL to find the best quality stream
-  for (const entry of parsedLinks) {
-    try {
-      const response = await axios.get(entry.url, { headers: { 'Referer': entry.referer } });
-      const lines = response.data.split('\n');
-
-      // Find the URL for the 1080p stream
-      let bestQualityUrl = entry.url;
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('1080p')) {
-          bestQualityUrl = new URL(lines[i + 1], entry.url).href; // Combine relative URL with base URL
-          break;
-        }
-      }
-
-      finalLinks.push({ ...entry, url: bestQualityUrl });
-    } catch (error) {
-      console.error("\x1b[31mError fetching .m3u8 content:\x1b[0m", error);
-    }
-  }
 
   // Clear the previous content of the playlist file
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
