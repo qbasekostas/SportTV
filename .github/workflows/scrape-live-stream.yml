@@ -20,8 +20,11 @@ jobs:
       with:
         node-version: '16'
 
-    - name: Install dependencies
-      run: npm install puppeteer
+    - name: Install Puppeteer
+      run: |
+        npm install puppeteer@latest
+        npm audit fix
+        npm fund
 
     - name: Run Puppeteer script
       run: node puppeteer-script.js
