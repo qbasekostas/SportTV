@@ -42,8 +42,8 @@ const path = require('path');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Αυξημένη αναμονή για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
-      await page.waitFor(120000); // Αναμονή για 120 δευτερόλεπτα
+      // Αύξηση του χρόνου αναμονής για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
+      await page.waitForTimeout(120000); // Αναμονή για 120 δευτερόλεπτα
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Κόκκινο κείμενο για σφάλματα
     }
