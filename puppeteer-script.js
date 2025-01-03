@@ -42,7 +42,7 @@ const path = require('path');
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
       // Αυξημένη αναμονή για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
-      await new Promise(resolve => setTimeout(resolve, 40000)); // Αναμονή για 40 δευτερόλεπτα
+      await new Promise(resolve => setTimeout(resolve, 60000)); // Αναμονή για 60 δευτερόλεπτα
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Κόκκινο κείμενο για σφάλματα
     }
