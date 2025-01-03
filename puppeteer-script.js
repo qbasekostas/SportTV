@@ -27,10 +27,6 @@ const path = require('path');
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
-    client.on('Network.requestWillBeSent', (params) => {
-      console.log(`\x1b[36mRequest made: ${params.request.url}\x1b[0m`); // Κυανό κείμενο για κάθε αίτημα που γίνεται
-    });
-
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
       console.log("\x1b[36mNetwork response received:\x1b[0m", url); // Κυανό κείμενο για κάθε λήψη δικτυακής απόκρισης
@@ -46,16 +42,8 @@ const path = require('path');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Έλεγχος αν η σελίδα περιέχει το αναμενόμενο περιεχόμενο
-      const pageContent = await page.content();
-      if (pageContent.includes('tracks-v1a1')) {
-        console.log("\x1b[32mExpected content found on page:\x1b[0m", targetUrl); // Πράσινο κείμενο για βρεθείσα αναμενόμενη περιεχόμενο
-      } else {
-        console.log("\x1b[33mExpected content not found on page:\x1b[0m", targetUrl); // Κίτρινο κείμενο για μη βρεθείσα αναμενόμενη περιεχόμενο
-      }
-
       // Αυξημένη αναμονή για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
-      await new Promise(resolve => setTimeout(resolve, 60000)); // Αναμονή για 60 δευτερόλεπτα
+      await page.waitForTimeout(120000); // Αναμονή για 120 δευτερόλεπτα
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Κόκκινο κείμενο για σφάλματα
     }
