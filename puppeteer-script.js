@@ -29,6 +29,7 @@ const path = require('path');
 
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
+      console.log("\x1b[36mNetwork response received:\x1b[0m", url); // Κυανό κείμενο για κάθε λήψη δικτυακής απόκρισης
       if (url.endsWith('.m3u8') && url.includes('/tracks-v1a1')) {
         const referer = targetUrl;
         const streamName = url.split('/').slice(-2, -1)[0];
