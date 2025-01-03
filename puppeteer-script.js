@@ -27,6 +27,10 @@ const path = require('path');
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
+    client.on('Network.requestWillBeSent', (params) => {
+      console.log(`\x1b[36mRequest made: ${params.request.url}\x1b[0m`); // Κυανό κείμενο για κάθε αίτημα που γίνεται
+    });
+
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
       console.log("\x1b[36mNetwork response received:\x1b[0m", url); // Κυανό κείμενο για κάθε λήψη δικτυακής απόκρισης
