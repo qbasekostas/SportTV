@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.27.2",
-    "puppeteer": "^14.4.1"
+    "axios": "^1.7.9",
+    "puppeteer": "^23.11.1"
   }
 }
