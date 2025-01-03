@@ -42,6 +42,14 @@ const path = require('path');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
+      // Έλεγχος αν η σελίδα περιέχει το αναμενόμενο περιεχόμενο
+      const pageContent = await page.content();
+      if (pageContent.includes('tracks-v1a1')) {
+        console.log("\x1b[32mExpected content found on page:\x1b[0m", targetUrl); // Πράσινο κείμενο για βρεθείσα αναμενόμενη περιεχόμενο
+      } else {
+        console.log("\x1b[33mExpected content not found on page:\x1b[0m", targetUrl); // Κίτρινο κείμενο για μη βρεθείσα αναμενόμενη περιεχόμενο
+      }
+
       // Αυξημένη αναμονή για να εξασφαλιστεί ότι ολοκληρώνονται όλα τα αιτήματα δικτύου
       await new Promise(resolve => setTimeout(resolve, 60000)); // Αναμονή για 60 δευτερόλεπτα
     } catch (error) {
@@ -71,7 +79,7 @@ const path = require('path');
       fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
     });
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Κίτρινη προειδοποίηση για κανένα αποτέλεσμα
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);  // Κίτρινη προειδοποίηση για κανένα αποτέλεσμα
     fs.appendFileSync('playlist.m3u8', '#EXTINF:-1,No .m3u8 URL found.\nNo .m3u8 URL found.\n');
   }
 
