@@ -20,10 +20,10 @@ jobs:
       with:
         node-version: '18'
 
-    - name: Install Puppeteer
+    - name: Install Puppeteer and fix vulnerabilities
       run: |
         npm install puppeteer@latest
-        npm audit fix
+        npm audit fix --force
         npm fund
 
     - name: Run Puppeteer script
