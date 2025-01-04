@@ -52,7 +52,7 @@ const fs = require('fs');
       try {
         console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
         await page.goto(targetUrl, { waitUntil: 'load' });
-          await page.waitForTimeout(20000)
+          await page.waitFor(20000)
         // await page.waitForSelector('body', {timeout: 30000})
 
         await page.screenshot({ path: `screenshot-${targetUrl.split('/').pop()}.png` });
