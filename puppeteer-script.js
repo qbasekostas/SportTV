@@ -22,6 +22,7 @@ const fs = require('fs');
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
+    // Set custom headers
     await page.setExtraHTTPHeaders({
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
       'Accept': '*/*',
@@ -29,6 +30,7 @@ const fs = require('fs');
       'Connection': 'keep-alive',
     });
 
+    // Enable Network Interception
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
@@ -45,7 +47,21 @@ const fs = require('fs');
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
+
+      // Extract links from page content
+      const pageLinks = await page.evaluate(() => {
+        return Array.from(document.querySelectorAll('a[href*=".m3u8"]')).map(a => a.href);
+      });
+
+      pageLinks.forEach(link => {
+        const referer = targetUrl;
+        const streamName = link.split('/').slice(-2, -1)[0];
+        m3u8Links.add(JSON.stringify({ streamName, url: link, referer }));
+        console.log("\x1b[32mFound .m3u8 URL in content:\x1b[0m", link);
+      });
+
+      // Wait for additional network requests
+      await new Promise(resolve => setTimeout(resolve, 15000)); // Wait for 15 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
