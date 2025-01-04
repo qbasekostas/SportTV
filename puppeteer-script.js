@@ -44,25 +44,16 @@ const fs = require('fs');
       }
     });
 
+    client.on('Network.loadingFinished', async (params) => {
+      const responseBody = await client.send('Network.getResponseBody', { requestId: params.requestId });
+      if (responseBody.body.includes('.m3u8')) {
+        console.log("\x1b[36mFound potential .m3u8 in response body:\x1b[0m", responseBody.body);
+      }
+    });
+
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
-
-      // Extract links from page content
-      const pageLinks = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll('a[href*=".m3u8"]')).map(a => a.href);
-      });
-
-      pageLinks.forEach(link => {
-        const referer = targetUrl;
-        const streamName = link.split('/').slice(-2, -1)[0];
-        m3u8Links.add(JSON.stringify({ streamName, url: link, referer }));
-        console.log("\x1b[32mFound .m3u8 URL in content:\x1b[0m", link);
-      });
-
-      // Save the full page content for debugging
-      const pageContent = await page.content();
-      fs.writeFileSync(`debug_${targetUrl.replace(/[^a-zA-Z0-9]/g, '_')}.html`, pageContent);
 
       // Wait for additional network requests
       await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
