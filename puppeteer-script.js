@@ -49,8 +49,8 @@ const fs = require('fs');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Wait for additional network activity
-      await page.waitForTimeout(15000); // 15 seconds
+      // Replace waitForTimeout with a manual delay
+      await new Promise(resolve => setTimeout(resolve, 15000)); // Wait for 15 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
