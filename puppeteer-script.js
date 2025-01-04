@@ -83,7 +83,7 @@ const fs = require('fs');
   if (parsedLinks.length) {
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
   } else {
-    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m`);
   }
 
   await browser.close();
