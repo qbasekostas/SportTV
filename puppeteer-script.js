@@ -46,7 +46,7 @@ const fs = require('fs');
 
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+      await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
       // Extract links from page content
       const pageLinks = await page.evaluate(() => {
@@ -60,8 +60,12 @@ const fs = require('fs');
         console.log("\x1b[32mFound .m3u8 URL in content:\x1b[0m", link);
       });
 
+      // Save the full page content for debugging
+      const pageContent = await page.content();
+      fs.writeFileSync(`debug_${targetUrl.replace(/[^a-zA-Z0-9]/g, '_')}.html`, pageContent);
+
       // Wait for additional network requests
-      await new Promise(resolve => setTimeout(resolve, 15000)); // Wait for 15 seconds
+      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
