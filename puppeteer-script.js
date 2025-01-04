@@ -2,144 +2,158 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 (async () => {
-    const targetUrls = [
-        'https://foothubhd.org/cdn3/linka.php',
-        'https://foothubhd.org/cdn3/linkb.php',
-        'https://foothubhd.org/cdn3/linkc.php',
-        'https://foothubhd.org/cdn3/linkd.php',
-        'https://foothubhd.org/cdn3/linke.php',
-        'https://foothubhd.org/cdn3/linkf.php',
-        'https://foothubhd.org/cdn3/linkg.php',
-        'https://foothubhd.org/cdn3/linkh.php'
-    ];
+  const targetUrls = [
+    'https://foothubhd.org/cdn3/linka.php',
+    'https://foothubhd.org/cdn3/linkb.php',
+    'https://foothubhd.org/cdn3/linkc.php',
+    'https://foothubhd.org/cdn3/linkd.php',
+    'https://foothubhd.org/cdn3/linke.php',
+    'https://foothubhd.org/cdn3/linkf.php',
+    'https://foothubhd.org/cdn3/linkg.php',
+    'https://foothubhd.org/cdn3/linkh.php'
+  ];
 
-    const m3u8Links = new Set();
-    let browser;
+  const m3u8Links = new Set();
+  let browser;
 
-    try {
-        console.log("\x1b[34mStarting Puppeteer...\x1b[0m");
-        browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+  try {
+    console.log("\x1b[34mStarting Puppeteer...\x1b[0m");
+    browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
 
-        for (const targetUrl of targetUrls) {
-            const page = await browser.newPage();
-            await page.setExtraHTTPHeaders({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://foothubhd.org/',
-                'Origin': 'https://foothubhd.org',
-                'Accept': '*/*',
-                'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
-                'Connection': 'keep-alive',
-            });
+    for (const targetUrl of targetUrls) {
+      const page = await browser.newPage();
+      await page.setExtraHTTPHeaders({
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://foothubhd.org/',
+          'Origin': 'https://foothubhd.org',
+          'Accept': '*/*',
+          'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
+          'Connection': 'keep-alive',
+      });
 
-               page.on('response', async (response) => {
+       page.on('response', async (response) => {
+        try {
+            const url = response.url();
+            const contentType = response.headers()['content-type'];
+              if (url.includes('.json') || contentType?.includes('json')) {
                 try {
-                    const url = response.url();
-                    const contentType = response.headers()['content-type'];
-                    if (url.includes('.json') || contentType?.includes('json')) {
-                        try {
-                           const json = await response.json();
-                             if (json && typeof json === 'object') {
-                                 const m3u8Url = findM3U8Url(json);
-                                if(m3u8Url){
-                                    const referer = targetUrl;
-                                     const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
-                                      m3u8Links.add({ streamName, url:m3u8Url, referer });
-                                       console.log("\x1b[32mFound .m3u8 URL in json:\x1b[0m", m3u8Url);
-                                 }
-                            }
-                        } catch (e) {
-                             console.error("\x1b[31mError parsing json:\x1b[0m", url, e);
+                   const json = await response.json();
+                      if (json && typeof json === 'object') {
+                         const m3u8Url = findM3U8Url(json);
+                            if(m3u8Url){
+                                const referer = targetUrl;
+                                const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                  m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                  console.log("\x1b[32mFound .m3u8 URL in json:\x1b[0m", m3u8Url);
+                              }
                         }
-                    }  else if(contentType?.includes('html')){
-                        try {
-                            const html = await response.text();
-                            const scriptTagMatches = html.matchAll(/<script[^>]*type="application\/json"[^>]*>(.*?)<\/script>/gs)
-                            for(const match of scriptTagMatches){
-                                try {
-                                    const json = JSON.parse(match[1]);
-                                    if (json && typeof json === 'object') {
-                                        const m3u8Url = findM3U8Url(json);
-                                         if(m3u8Url){
-                                             const referer = targetUrl;
-                                              const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
-                                              m3u8Links.add({ streamName, url:m3u8Url, referer });
-                                                console.log("\x1b[32mFound .m3u8 URL in script tag:\x1b[0m", m3u8Url);
-                                          }
-                                  }
-                               } catch(e){
-                                  console.error("\x1b[31mError parsing script tag:\x1b[0m", url,e)
+                  } catch (e) {
+                      console.error("\x1b[31mError parsing json:\x1b[0m", url, e);
+                  }
+              }  else if(contentType?.includes('html')){
+                 try {
+                      const html = await response.text();
+                        const scriptTagMatches = html.matchAll(/<script[^>]*type="application\/json"[^>]*>(.*?)<\/script>/gs)
+                        for(const match of scriptTagMatches){
+                            try {
+                                const json = JSON.parse(match[1]);
+                                if (json && typeof json === 'object') {
+                                      const m3u8Url = findM3U8Url(json);
+                                        if(m3u8Url){
+                                            const referer = targetUrl;
+                                            const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                            m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                            console.log("\x1b[32mFound .m3u8 URL in script tag:\x1b[0m", m3u8Url);
+                                        }
                                 }
+                            } catch(e){
+                               console.error("\x1b[31mError parsing script tag:\x1b[0m", url,e)
                             }
-                         } catch(e){
-                           console.error("\x1b[31mError processing html response:\x1b[0m", url,e);
-                       }
-                   }
-                } catch (e) {
-                   console.error("\x1b[31mError in response:\x1b[0m", response.url(), e);
-               }
-              });
-
-            try {
-                console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
-                await page.goto(targetUrl, { waitUntil: 'networkidle2' });
+                        }
+                     } catch(e){
+                        console.error("\x1b[31mError processing html response:\x1b[0m", url,e);
+                     }
+                  }
                 
-                // **Wait for the video tag with the attribute to appear**
-                try {
-                    await page.waitForSelector('[data-html5-video]', { timeout: 10000 });
-                      console.log("\x1b[34m[data-html5-video] element found on page:\x1b[0m", targetUrl);
-                   // Get the src of the video
-                    const src = await page.$eval('[data-html5-video]', el => el.src);
-                      console.log("\x1b[34mVideo source (src):\x1b[0m", src)
+                
+            } catch (e) {
+               console.error("\x1b[31mError in response:\x1b[0m", response.url(), e);
+            }
+        });
+          
+       try {
+           console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
+            await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-                       if (src && src.startsWith('blob:')) {
-                           //  **We cannot get the m3u8 from the blob src, so we ignore it**
-                           console.log("\x1b[33m⚠️ blob src found, ignoring it:\x1b[0m");
-                         }
-                } catch(e){
-                     console.error("\x1b[31m[data-html5-video] element not found:\x1b[0m", targetUrl,e);
-                }
-               await page.evaluate(async (time) => {
-                 await new Promise((resolve) => {
-                    setTimeout(resolve, time);
-                 });
-               }, 20000);
-              
-              await page.screenshot({ path: `screenshot-${targetUrl.split('/').pop()}.png` });
+                // Wait for the video tag
+              try {
+                 await page.waitForSelector('video[data-html5-video]', { timeout: 10000 });
+                  console.log("\x1b[34mvideo[data-html5-video] element found on page:\x1b[0m", targetUrl);
+                    
+                  const videoSrc = await page.$eval('video[data-html5-video]', el => el.src);
+
+                    if (videoSrc && videoSrc.startsWith('blob:')) {
+                        console.log(`\x1b[34mBlob source found:\x1b[0m ${videoSrc}`);
+
+                            page.on('response', async (response) => {
+                                if (response.url() === videoSrc) {
+                                    try {
+                                        const m3u8Url = await response.text();
+                                            const referer = targetUrl;
+                                            const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                             m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                            console.log("\x1b[32mFound m3u8 URL from blob response:\x1b[0m", m3u8Url);
+                                        
+                                    } catch (error) {
+                                      console.error(`\x1b[31mError processing blob response:\x1b[0m`, error, videoSrc);
+                                    }
+                                 }
+                             });
+                      }
+              } catch(e){
+                   console.error("\x1b[31mError waiting for video element:\x1b[0m", targetUrl,e);
+              }
+                await page.evaluate(async (time) => {
+                     await new Promise((resolve) => {
+                        setTimeout(resolve, time);
+                     });
+                   }, 20000);
+            await page.screenshot({ path: `screenshot-${targetUrl.split('/').pop()}.png` });
             } catch (error) {
-               console.error("\x1b[31mError navigating to page:\x1b[0m", error, targetUrl);
+              console.error("\x1b[31mError navigating to page:\x1b[0m", error, targetUrl);
             } finally {
                try {
                    await page.close();
                } catch (closeError) {
-                     console.error("\x1b[31mError closing page:\x1b[0m", closeError, targetUrl);
-                }
+                    console.error("\x1b[31mError closing page:\x1b[0m", closeError, targetUrl);
+              }
            }
         }
 
         const parsedLinks = Array.from(m3u8Links);
-          parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
-        let playlistContent = "#EXTM3U\n";
-         parsedLinks.forEach(entry => {
-             playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
-         });
-        fs.writeFileSync('playlist.m3u8', playlistContent);
-
+         parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
+         let playlistContent = "#EXTM3U\n";
+        parsedLinks.forEach(entry => {
+          playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
+        });
+         fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
            console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
-         } else {
+        } else {
            console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
-         }
+       }
+
     } catch (error) {
          console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
     } finally {
-         if (browser) {
-             try {
-                await browser.close();
-            } catch (browserCloseError) {
+        if (browser) {
+            try {
+               await browser.close();
+           } catch (browserCloseError) {
                   console.error("\x1b[31mError closing browser:\x1b[0m", browserCloseError);
              }
-        }
+       }
     }
 })();
 
