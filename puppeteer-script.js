@@ -22,12 +22,13 @@ const fs = require('fs');
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
-    // Set custom headers
     await page.setExtraHTTPHeaders({
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Connection': 'keep-alive',
     });
 
-    // Enable network interception
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
@@ -44,9 +45,7 @@ const fs = require('fs');
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-
-      // Wait for potential async requests
-      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
+      await new Promise(resolve => setTimeout(resolve, 20000)); // Wait for 20 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
