@@ -46,7 +46,7 @@ const fs = require('fs');
       await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
 
       // Wait for potential async requests
-      await page.waitForTimeout(10000); // 10 seconds
+      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
