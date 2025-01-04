@@ -22,20 +22,23 @@ const fs = require('fs');
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0');
+    // Set custom headers
     await page.setExtraHTTPHeaders({
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
       'Accept': '*/*',
       'Accept-Language': 'en-US,en;q=0.5',
       'Cache-Control': 'no-cache',
       'Pragma': 'no-cache',
     });
 
+    // Enable DevTools Protocol
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
+    // Capture network responses
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
-      if (url.includes('.m3u8')) {
+      if (url.endsWith('.m3u8')) {
         const referer = targetUrl;
         const streamName = url.split('/').slice(-2, -1)[0];
         m3u8Links.add(JSON.stringify({ streamName, url, referer }));
@@ -46,25 +49,39 @@ const fs = require('fs');
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
-      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait for 30 seconds
+
+      // Wait for potential dynamic content
+      await page.waitForTimeout(30000); // 30 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
 
+    // Check for .m3u8 links in the DOM
+    const domLinks = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('a[href*=".m3u8"]')).map(link => link.href);
+    });
+
+    domLinks.forEach(link => {
+      const referer = targetUrl;
+      const streamName = link.split('/').slice(-2, -1)[0];
+      m3u8Links.add(JSON.stringify({ streamName, url: link, referer }));
+    });
+
     await page.close();
   }
 
-  console.log("\x1b[34mAll network responses:\x1b[0m", Array.from(m3u8Links));
-
+  // Convert and sort the links
   const parsedLinks = Array.from(m3u8Links).map(JSON.parse);
   parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
+  // Save the playlist
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
+  parsedLinks.forEach(entry => {
+    fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
+  });
+
   if (parsedLinks.length) {
     console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
-    parsedLinks.forEach(entry => {
-      fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
-    });
   } else {
     console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
   }
