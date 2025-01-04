@@ -1,66 +1,72 @@
-const puppeteer = require('puppeteer'); // Εισαγωγή του Puppeteer
-const fs = require('fs'); // Εισαγωγή του File System module
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
 
 (async () => {
 const targetUrls = [
-    'https://foothubhd.org/cdn3/linka.php',
-    'https://foothubhd.org/cdn3/linkb.php',
-    'https://foothubhd.org/cdn3/linkc.php',
-    'https://foothubhd.org/cdn3/linkd.php',
-    'https://foothubhd.org/cdn3/linke.php',
-    'https://foothubhd.org/cdn3/linkf.php',
-    'https://foothubhd.org/cdn3/linkg.php',
-    'https://foothubhd.org/cdn3/linkh.php'
-]; // Λίστα με τις URLs που θα επισκεφτούμε
+@@ -11,56 +12,65 @@ const fs = require('fs'); // Εισαγωγή του File System module
+'https://foothubhd.org/cdn3/linkf.php',
+'https://foothubhd.org/cdn3/linkg.php',
+'https://foothubhd.org/cdn3/linkh.php'
+  ];
 
-const m3u8Urls = []; // Πίνακας για αποθήκευση των m3u8 URLs που θα βρεθούν
+  const m3u8Urls = [];
 
-console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Μήνυμα εκκίνησης Puppeteer
+  console.log("\x1b[34mStarting Puppeteer...\x1b[0m"); // Blue text for startup info
 
-const browser = await puppeteer.launch({ headless: true }); // Εκκίνηση του Puppeteer σε headless mode
+  const browser = await puppeteer.launch({ headless: true });
 
-for (const targetUrl of targetUrls) { // Επανάληψη για κάθε URL στη λίστα
-const page = await browser.newPage(); // Δημιουργία νέας καρτέλας
+  for (const targetUrl of targetUrls) {
+    const page = await browser.newPage();
 
-// Ενεργοποίηση του DevTools Protocol
+    // Enable DevTools Protocol
 const client = await page.target().createCDPSession();
-await client.send('Network.enable'); // Ενεργοποίηση της παρακολούθησης δικτυακών αιτημάτων
+    await client.send('Network.enable');
 
-client.on('Network.responseReceived', async (params) => { // Συμβάν για κάθε απάντηση δικτυακού αιτήματος
-const url = params.response.url; // Λήψη της URL της απάντησης
-const status = params.response.status; // Λήψη του κωδικού κατάστασης της απάντησης
-const contentType = params.response.headers['content-type']; // Λήψη του τύπου περιεχομένου της απάντησης
-console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}, Content-Type: ${contentType}\x1b[0m`); // Καταγραφή της απάντησης
-if (url.endsWith('.m3u8')) { // Έλεγχος αν η URL τελειώνει σε .m3u8
-m3u8Urls.push(url); // Προσθήκη της URL στον πίνακα
-console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Μήνυμα εύρεσης URL
-console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Καταγραφή του πίνακα με τις URLs
+    client.on('Network.responseReceived', async (params) => {
+      const url = params.response.url;
+      const status = params.response.status;
+      const contentType = params.response.headers['content-type'];
+      console.log(`\x1b[34mNetwork response: URL: ${url}, Status: ${status}, Content-Type: ${contentType}\x1b[0m`); // Log all network responses with status and content type
+      if (url.endsWith('.m3u8') && !path.basename(url).startsWith('tracks-')) {
+        m3u8Urls.push({ url, referer: targetUrl });
+        console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url); // Green text for found URL
+        console.log("\x1b[32mCurrent m3u8Urls array:\x1b[0m", m3u8Urls); // Log the current state of the m3u8Urls array
 }
 });
 
 try {
-console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl); // Μήνυμα πλοήγησης στη σελίδα
-await page.goto(targetUrl, { waitUntil: 'networkidle2' }); // Πλοήγηση στη σελίδα και αναμονή μέχρι να μην υπάρχουν ενεργά δίκτυα
+      console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
+      await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-// Αναμονή για να εξασφαλιστεί ότι όλα τα δικτυακά αιτήματα θα ολοκληρωθούν
-await new Promise(resolve => setTimeout(resolve, 40000)); // Αναμονή για 40 δευτερόλεπτα
+      // Increase the wait time to ensure all network requests complete
+      await new Promise(resolve => setTimeout(resolve, 40000)); // Wait for 40 seconds
 } catch (error) {
-console.error("\x1b[31mError navigating to page:\x1b[0m", error); // Μήνυμα σφάλματος πλοήγησης στη σελίδα
+      console.error("\x1b[31mError navigating to page:\x1b[0m", error);  // Red text for errors
 }
 
-await page.close(); // Κλείσιμο της καρτέλας
+    await page.close();
 }
 
-console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls); // Καταγραφή όλων των απαντήσεων
+  console.log("\x1b[34mAll network responses:\x1b[0m", m3u8Urls);
 
-// Αποθήκευση των αποτελεσμάτων σε αρχείο για αναφορά
+  // Sort URLs alphabetically
+  m3u8Urls.sort((a, b) => a.url.localeCompare(b.url));
+
+  // Clear the previous content of the playlist file
+  fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
+
+  // Save results to file for reference
 if (m3u8Urls.length) {
-console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`); // Μήνυμα επιτυχούς εύρεσης URLs
-fs.writeFileSync('playlist.m3u8', m3u8Urls.join('\n')); // Αποθήκευση των URLs σε αρχείο
+    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${m3u8Urls.length}\x1b[0m`);
+    m3u8Urls.forEach(entry => {
+      const name = path.basename(entry.url);
+      fs.appendFileSync('playlist.m3u8', `#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
+    });
 } else {
-console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m"); // Μήνυμα μη εύρεσης URLs
-fs.writeFileSync('playlist.m3u8', 'No .m3u8 URL found.'); // Αποθήκευση μηνύματος σε αρχείο
+    console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");  // Yellow warning for no results
+    fs.appendFileSync('playlist.m3u8', '#EXTINF:-1,No .m3u8 URL found.\nNo .m3u8 URL found.');
 }
 
-await browser.close(); // Κλείσιμο του Puppeteer
+  await browser.close();
 })();
