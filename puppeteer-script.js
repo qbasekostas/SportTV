@@ -25,8 +25,10 @@ const fs = require('fs');
     // Set custom headers
     await page.setExtraHTTPHeaders({
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+      'Referer': 'https://foothubhd.org/',
+      'Origin': 'https://foothubhd.org',
       'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.5',
+      'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
       'Connection': 'keep-alive',
     });
 
