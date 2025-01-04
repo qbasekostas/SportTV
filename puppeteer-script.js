@@ -47,12 +47,8 @@ const fs = require('fs');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Execute JavaScript if needed
-      await page.evaluate(() => {
-        console.log("Executing custom JavaScript...");
-      });
-
-      await page.waitForTimeout(30000); // Wait for 30 seconds
+      // Wait for additional network requests
+      await new Promise(r => setTimeout(r, 10000)); // Wait for 10 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
