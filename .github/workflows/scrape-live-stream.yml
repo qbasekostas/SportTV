@@ -27,7 +27,7 @@ jobs:
         npm fund
 
     - name: Run Puppeteer script
-      run: node puppeteer-script.js
+      run: node puppeteer-script.js || exit 1
 
     - name: Commit and push changes
   run: |
