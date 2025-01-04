@@ -44,13 +44,6 @@ const fs = require('fs');
       }
     });
 
-    client.on('Network.loadingFinished', async (params) => {
-      const responseBody = await client.send('Network.getResponseBody', { requestId: params.requestId });
-      if (responseBody.body.includes('.m3u8')) {
-        console.log("\x1b[36mFound potential .m3u8 in response body:\x1b[0m", responseBody.body);
-      }
-    });
-
     try {
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
