@@ -32,14 +32,13 @@ const fs = require('fs');
       });
 
       // Handle different m3u8 link extraction methods
-      let foundM3u8Url = await extractM3u8FromPage(page, targetUrl);
+      let foundM3u8Url = await extractM3u8FromPage(page, targetUrl); 
 
       if (!foundM3u8Url) {
         console.log("\x1b[33mNo m3u8 URL found using default methods.\x1b[0m");
 
         // Additional attempts to find m3u8 links (optional)
-        // You can uncomment these and implement your logic here
-        // foundM3u8Url = await tryOtherM3u8ExtractionMethods(page, targetUrl);
+        // foundM3u8Url = await tryOtherM3u8ExtractionMethods(page, targetUrl); 
       }
 
       if (foundM3u8Url) {
@@ -56,7 +55,7 @@ const fs = require('fs');
 
     let playlistContent = "#EXTM3U\n";
     parsedLinks.forEach(entry => {
-      playlistContent += `#EXTINF:-1,<span class="math-inline">\{entry\.streamName\}\\n\#EXTVLCOPT\:http\-referrer\=</span>{entry.referer}\n${entry.url}\n`;
+      playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
     });
     fs.writeFileSync('playlist.m3u8', playlistContent);
 
@@ -74,4 +73,35 @@ const fs = require('fs');
   }
 })();
 
-// This function encapsulates the logic
+// Function to extract m3u8 link from the page
+async function extractM3u8FromPage(page, targetUrl) {
+  // Implement your logic here to extract m3u8 link from the page
+  // This is a placeholder, replace with your actual extraction logic
+
+  // Example: Try to find m3u8 link in the video source attribute
+  try {
+    const videoElement = await page.$('video');
+    if (videoElement) {
+      const videoSrc = await page.evaluate((el) => el.src, videoElement);
+      if (videoSrc && videoSrc.endsWith('.m3u8')) {
+        return videoSrc;
+      }
+    }
+  } catch (error) {
+    console.error("Error extracting m3u8 link:", error);
+  }
+
+  // Example: Try to find m3u8 link in the page content
+  try {
+    const pageContent = await page.content();
+    // Use regular expressions or other methods to find m3u8 links in the pageContent
+    // ...
+
+    // If m3u8 link is found, return it
+  } catch (error) {
+    console.error("Error extracting m3u8 link from page content:", error);
+  }
+
+  // If no m3u8 link is found, return null
+  return null;
+}
