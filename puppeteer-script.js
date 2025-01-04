@@ -51,7 +51,7 @@ const fs = require('fs');
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
       // Wait for potential dynamic content
-      await page.waitFor({ timeout: 30000 }); // 30 seconds
+      await page.waitForTimeout(30000); // 30 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
