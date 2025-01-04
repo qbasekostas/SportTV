@@ -22,7 +22,7 @@ const fs = require('fs');
 
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
-
+            
             await page.setExtraHTTPHeaders({
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Referer': 'https://foothubhd.org/',
@@ -31,52 +31,86 @@ const fs = require('fs');
                 'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Connection': 'keep-alive',
             });
-
-            const client = await page.target().createCDPSession();
-            await client.send('Network.enable');
-
-            client.on('Network.responseReceived', async (params) => {
-                try {
-                   const url = params.response.url;
-                    if (url.endsWith('.m3u8')) {
-                        const referer = targetUrl;
-                        const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                        m3u8Links.add({ streamName, url, referer });
-                        console.log("\x1b[32mFound .m3u8 URL:\x1b[0m", url);
+            
+            page.on('response', async (response) => {
+              try {
+                const url = response.url();
+                if (url.includes('.json') || response.headers()['content-type']?.includes('json')) {
+                  try {
+                   const json = await response.json();
+                    if (json && typeof json === 'object') {
+                      // console.log(json)
+                       const m3u8Url = findM3U8Url(json);
+                        if(m3u8Url){
+                            const referer = targetUrl;
+                            const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                              m3u8Links.add({ streamName, url:m3u8Url, referer });
+                              console.log("\x1b[32mFound .m3u8 URL in json:\x1b[0m", m3u8Url);
+                        }
                     }
-                } catch (error) {
-                    console.error("\x1b[31mError processing response:\x1b[0m", error, params);
-                }
+                  } catch(e){
+                     console.error("\x1b[31mError parsing json:\x1b[0m", url,e)
+                  }
+                  
+                } else if(response.headers()['content-type']?.includes('html')){
+                  try {
+                     const html = await response.text()
+                     const scriptTagMatches = html.matchAll(/<script[^>]*type="application\/json"[^>]*>(.*?)<\/script>/gs)
+                     for(const match of scriptTagMatches){
+                        try {
+                            const json = JSON.parse(match[1]);
+                            if (json && typeof json === 'object') {
+                                const m3u8Url = findM3U8Url(json);
+                                  if(m3u8Url){
+                                      const referer = targetUrl;
+                                      const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                      m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                      console.log("\x1b[32mFound .m3u8 URL in script tag:\x1b[0m", m3u8Url);
+                                  }
+                            }
+                          } catch(e){
+                            console.error("\x1b[31mError parsing script tag:\x1b[0m", url,e)
+                          }
+                     }
+                  } catch(e){
+                      console.error("\x1b[31mError processing html response:\x1b[0m", url,e)
+                  }
+               }
+              } catch (e) {
+                 console.error("\x1b[31mError in response:\x1b[0m", url,e)
+              }
             });
 
-             try {
+            try {
                 console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'networkidle0' });
-                await page.evaluate(async (time) => {
-                      await new Promise((resolve) => {
+                 await page.evaluate(async (time) => {
+                    await new Promise((resolve) => {
                         setTimeout(resolve, time);
-                      });
-                    }, 20000);
+                    });
+                  }, 20000);
 
                 await page.screenshot({ path: `screenshot-${targetUrl.split('/').pop()}.png` });
+
             } catch (error) {
                 console.error("\x1b[31mError navigating to page:\x1b[0m", error, targetUrl);
             } finally {
-               try {
+                try {
                     await page.close();
                 } catch (closeError) {
-                  console.error("\x1b[31mError closing page:\x1b[0m", closeError, targetUrl);
+                    console.error("\x1b[31mError closing page:\x1b[0m", closeError, targetUrl);
                 }
             }
         }
-        const parsedLinks = Array.from(m3u8Links);
-        parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
-        let playlistContent = "#EXTM3U\n";
+        const parsedLinks = Array.from(m3u8Links);
+         parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
+         let playlistContent = "#EXTM3U\n";
         parsedLinks.forEach(entry => {
           playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
         });
-       fs.writeFileSync('playlist.m3u8', playlistContent);
+
+        fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
             console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
@@ -84,16 +118,29 @@ const fs = require('fs');
             console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
         }
 
-
     } catch (error) {
          console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
     } finally {
          if (browser) {
             try {
-               await browser.close();
+                await browser.close();
             } catch (browserCloseError) {
                   console.error("\x1b[31mError closing browser:\x1b[0m", browserCloseError);
             }
         }
     }
 })();
+
+function findM3U8Url(obj) {
+    if (typeof obj === 'string' && obj.endsWith('.m3u8')) {
+        return obj;
+    } else if (typeof obj === 'object') {
+        for (const key in obj) {
+            const result = findM3U8Url(obj[key]);
+            if (result) {
+                return result;
+            }
+        }
+    }
+    return null;
+}
