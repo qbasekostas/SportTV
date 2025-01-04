@@ -29,7 +29,7 @@ jobs:
       run: node playwright-script.js
         
     - name: Upload playlist
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: playlist
         path: playlist.m3u8
