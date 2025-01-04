@@ -35,49 +35,47 @@ const fs = require('fs');
             page.on('response', async (response) => {
               try {
                 const url = response.url();
-                if (url.includes('.json') || response.headers()['content-type']?.includes('json')) {
-                  try {
-                   const json = await response.json();
-                    if (json && typeof json === 'object') {
-                      // console.log(json)
-                       const m3u8Url = findM3U8Url(json);
-                        if(m3u8Url){
-                            const referer = targetUrl;
-                            const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
-                              m3u8Links.add({ streamName, url:m3u8Url, referer });
-                              console.log("\x1b[32mFound .m3u8 URL in json:\x1b[0m", m3u8Url);
-                        }
-                    }
-                  } catch(e){
-                     console.error("\x1b[31mError parsing json:\x1b[0m", url,e)
-                  }
-                  
-                } else if(response.headers()['content-type']?.includes('html')){
-                  try {
-                     const html = await response.text()
-                     const scriptTagMatches = html.matchAll(/<script[^>]*type="application\/json"[^>]*>(.*?)<\/script>/gs)
-                     for(const match of scriptTagMatches){
-                        try {
-                            const json = JSON.parse(match[1]);
-                            if (json && typeof json === 'object') {
-                                const m3u8Url = findM3U8Url(json);
-                                  if(m3u8Url){
-                                      const referer = targetUrl;
-                                      const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
-                                      m3u8Links.add({ streamName, url:m3u8Url, referer });
-                                      console.log("\x1b[32mFound .m3u8 URL in script tag:\x1b[0m", m3u8Url);
-                                  }
-                            }
-                          } catch(e){
-                            console.error("\x1b[31mError parsing script tag:\x1b[0m", url,e)
+                  if (url.includes('.json') || response.headers()['content-type']?.includes('json')) {
+                    try {
+                       const json = await response.json();
+                      if (json && typeof json === 'object') {
+                         const m3u8Url = findM3U8Url(json);
+                          if(m3u8Url){
+                              const referer = targetUrl;
+                              const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                console.log("\x1b[32mFound .m3u8 URL in json:\x1b[0m", m3u8Url);
                           }
-                     }
-                  } catch(e){
-                      console.error("\x1b[31mError processing html response:\x1b[0m", url,e)
-                  }
+                      }
+                    } catch(e){
+                        console.error("\x1b[31mError parsing json:\x1b[0m", url,e)
+                    }
+                  } else if(response.headers()['content-type']?.includes('html')){
+                     try {
+                         const html = await response.text();
+                         const scriptTagMatches = html.matchAll(/<script[^>]*type="application\/json"[^>]*>(.*?)<\/script>/gs)
+                         for(const match of scriptTagMatches){
+                             try {
+                                 const json = JSON.parse(match[1]);
+                                if (json && typeof json === 'object') {
+                                      const m3u8Url = findM3U8Url(json);
+                                        if(m3u8Url){
+                                            const referer = targetUrl;
+                                            const streamName = new URL(m3u8Url).pathname.split('/').slice(-2, -1)[0];
+                                            m3u8Links.add({ streamName, url:m3u8Url, referer });
+                                            console.log("\x1b[32mFound .m3u8 URL in script tag:\x1b[0m", m3u8Url);
+                                        }
+                                }
+                            } catch(e){
+                              console.error("\x1b[31mError parsing script tag:\x1b[0m", url,e)
+                            }
+                       }
+                    } catch(e){
+                        console.error("\x1b[31mError processing html response:\x1b[0m", url,e)
+                    }
                }
               } catch (e) {
-                 console.error("\x1b[31mError in response:\x1b[0m", url,e)
+                 console.error("\x1b[31mError in response:\x1b[0m", response.url(), e)
               }
             });
 
@@ -91,11 +89,10 @@ const fs = require('fs');
                   }, 20000);
 
                 await page.screenshot({ path: `screenshot-${targetUrl.split('/').pop()}.png` });
-
             } catch (error) {
                 console.error("\x1b[31mError navigating to page:\x1b[0m", error, targetUrl);
             } finally {
-                try {
+               try {
                     await page.close();
                 } catch (closeError) {
                     console.error("\x1b[31mError closing page:\x1b[0m", closeError, targetUrl);
@@ -105,12 +102,12 @@ const fs = require('fs');
 
         const parsedLinks = Array.from(m3u8Links);
          parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
-         let playlistContent = "#EXTM3U\n";
-        parsedLinks.forEach(entry => {
+        let playlistContent = "#EXTM3U\n";
+       parsedLinks.forEach(entry => {
           playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
         });
 
-        fs.writeFileSync('playlist.m3u8', playlistContent);
+         fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
             console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
@@ -123,7 +120,7 @@ const fs = require('fs');
     } finally {
          if (browser) {
             try {
-                await browser.close();
+               await browser.close();
             } catch (browserCloseError) {
                   console.error("\x1b[31mError closing browser:\x1b[0m", browserCloseError);
             }
