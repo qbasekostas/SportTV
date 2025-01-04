@@ -35,7 +35,7 @@ const fs = require('fs');
 
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
-      if (url.endsWith('.m3u8')) {
+      if (url.includes('.m3u8')) {
         const referer = targetUrl;
         const streamName = url.split('/').slice(-2, -1)[0];
         m3u8Links.add(JSON.stringify({ streamName, url, referer }));
