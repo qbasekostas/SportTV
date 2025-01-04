@@ -1,0 +1,35 @@
+name: M3U8 Finder with Playwright
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  find_m3u8_links:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm install playwright
+        npm install @playwright/test
+        npx playwright install chromium
+
+    - name: Run M3U8 Finder Script
+      run: node playwright-script.js
+        
+    - name: Upload playlist
+      uses: actions/upload-artifact@v3
+      with:
+        name: playlist
+        path: playlist.m3u8
