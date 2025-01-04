@@ -1,6 +1,5 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
-const path = require('path');
 
 (async () => {
   const targetUrls = [
@@ -23,14 +22,22 @@ const path = require('path');
   for (const targetUrl of targetUrls) {
     const page = await browser.newPage();
 
+    // Set User-Agent and custom headers
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0');
+    await page.setExtraHTTPHeaders({
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.5',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache'
+    });
+
     // Enable DevTools Protocol
     const client = await page.target().createCDPSession();
     await client.send('Network.enable');
 
     client.on('Network.responseReceived', async (params) => {
       const url = params.response.url;
-      console.log("\x1b[36mNetwork response received:\x1b[0m", url);
-      if (url.endsWith('.m3u8') && url.includes('/tracks-v1a1')) {
+      if (url.endsWith('.m3u8')) {
         const referer = targetUrl;
         const streamName = url.split('/').slice(-2, -1)[0];
         m3u8Links.add(JSON.stringify({ streamName, url, referer }));
@@ -42,8 +49,8 @@ const path = require('path');
       console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
       await page.goto(targetUrl, { waitUntil: 'networkidle2' });
 
-      // Increase wait time to ensure all network requests complete
-      await new Promise(resolve => setTimeout(resolve, 120000)); // Wait for 120 seconds
+      // Wait for additional network activity
+      await page.waitForTimeout(15000); // 15 seconds
     } catch (error) {
       console.error("\x1b[31mError navigating to page:\x1b[0m", error);
     }
@@ -59,15 +66,11 @@ const path = require('path');
   // Sort the links alphabetically by streamName
   parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
-  const finalLinks = parsedLinks;
-
-  // Clear the previous content of the playlist file
+  // Write results to playlist.m3u8
   fs.writeFileSync('playlist.m3u8', '#EXTM3U\n');
-
-  // Save results to file for reference
-  if (finalLinks.length) {
-    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${finalLinks.length}\x1b[0m`);
-    finalLinks.forEach(entry => {
+  if (parsedLinks.length) {
+    console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
+    parsedLinks.forEach(entry => {
       fs.appendFileSync('playlist.m3u8', `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`);
     });
   } else {
