@@ -21,6 +21,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        npm install selenium-webdriver selenium-wire
         npm install playwright
         npm install @playwright/test
         npx playwright install chromium
