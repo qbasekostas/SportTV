@@ -21,7 +21,9 @@ jobs:
           node-version: 18 # Or your preferred Node.js version
 
       - name: Install dependencies
-        run: npm install selenium-webdriver selenium-wire
+        run: |
+          npm install selenium-webdriver
+          pip install selenium-wire
 
       - name: Install Playwright dependencies
         run: npm install playwright @playwright/test && npx playwright install chromium
