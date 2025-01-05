@@ -8,3 +8,4 @@ beautifulsoup4
 webdriver_manager
 pyppeteer
 pyppeteer_stealth
+playwright
