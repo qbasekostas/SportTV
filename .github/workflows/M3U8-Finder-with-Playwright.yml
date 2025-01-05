@@ -21,7 +21,7 @@ jobs:
           node-version: 18 # Or your preferred Node.js version
 
       - name: Install Playwright dependencies
-        run: npm install playwright @playwright/test && npx playwright install chromium
+        run: npm install playwright @playwright/test && npx playwright install chromium && npx playwright install firefox
 
       - name: Run script
         run: node playwright-script.js # Or whatever name you use for your script
