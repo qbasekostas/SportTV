@@ -45,8 +45,7 @@ const fs = require('fs');
                 const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 5000 });
                 console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
 
-
-                  await page.evaluate(() => {
+                 await page.evaluate(() => {
                     if(window.ConsoleBan && window.ConsoleBan.init){
                        window.ConsoleBan.init({
                          redirect: null,
@@ -71,38 +70,38 @@ const fs = require('fs');
                     continue;
                 }
 
-
                 let decodedM3U8;
                 try {
-                    decodedM3U8 = await page.evaluate(() => {
+                     decodedM3U8 = await page.evaluate(() => {
                         try {
-                            if (window.player && window.player.options && window.player.options.source) {
-                                return window.player.options.source;
-                            }
-                            return Promise.reject('Could not get the M3U8 URL from player.options.source');
-                        } catch (e) {
-                            return Promise.reject(e);
-                        }
-                    });
-                    console.log(`\x1b[32mFound .m3u8 URL by Clappr source property:\x1b[0m`);
-                } catch (scriptError) {
-                    console.log("\x1b[33mCould not get the M3U8 url from Clappr source:\x1b[0m", scriptError, targetUrl);
-                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                    continue;
-                }
+                             if (window.player && window.player.options && window.player.options.source) {
+                                 return window.player.options.source;
+                             }
+                             return Promise.reject('Could not get the M3U8 URL from player.options.source');
+                         } catch (e) {
+                              return Promise.reject(e);
+                         }
+                      });
+                       console.log(`\x1b[32mFound .m3u8 URL by Clappr source property:\x1b[0m`);
+                  } catch (scriptError) {
+                         console.log("\x1b[33mCould not get the M3U8 url from Clappr source:\x1b[0m", scriptError, targetUrl);
+                         await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                         continue;
+                    }
+
                  // Extract the stream name from URL path
                  const streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
 
-               // Filter m3u8 urls
-                 if (decodedM3U8.includes('tracks-v1a1') && !decodedM3U8.includes('index')) {
-                     m3u8Links.add({ streamName, url: decodedM3U8, referer: 'https://foothubhd.org/' });
-                 }else{
-                    console.log("\x1b[33mSkipping M3U8 because doesn't contain 'tracks-v1a1' or contains 'index':\x1b[0m", decodedM3U8);
+                // Modify m3u8 URL
+                 let modifiedM3U8 = decodedM3U8;
+                 if (modifiedM3U8.includes('index')) {
+                       modifiedM3U8 = modifiedM3U8.replace('index', 'tracks-v1a1');
+                     console.log("\x1b[33mModified m3u8 URL:\x1b[0m", decodedM3U8," \x1b[32mto:\x1b[0m", modifiedM3U8);
                  }
 
+                m3u8Links.add({ streamName, url: modifiedM3U8, referer: 'https://foothubhd.org/' });
 
                 await delay(5000); // Add delay between page loads.
-
 
             } catch (navigationError) {
                 console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
