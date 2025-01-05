@@ -4,7 +4,7 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
 (async () => {
     const targetUrls = [
-        'https://foothubhd.org/cdn3/linka.php',
+       'https://foothubhd.org/cdn3/linka.php',
         'https://foothubhd.org/cdn3/linkb.php',
         'https://foothubhd.org/cdn3/linkc.php',
         'https://foothubhd.org/cdn3/linkd.php',
@@ -17,6 +17,7 @@ const { getRandomUserAgent } = require('./useragent_generator');
     const m3u8Links = new Set();
     let browser;
     const delay = ms => new Promise(res => setTimeout(res, ms));
+     const CLAPPR_TIMEOUT = 20000;
 
 
     try {
@@ -27,9 +28,9 @@ const { getRandomUserAgent } = require('./useragent_generator');
             const page = await browser.newPage();
 
              //Remove user agent
-            // const randomUserAgent = getRandomUserAgent();
+           // const randomUserAgent = getRandomUserAgent();
              await page.setExtraHTTPHeaders({
-                // 'User-Agent': randomUserAgent,
+               // 'User-Agent': randomUserAgent,
                 'Referer': 'https://foothubhd.org/',
                  'Origin': 'https://foothubhd.org',
                  'Accept': '*/*',
@@ -37,86 +38,96 @@ const { getRandomUserAgent } = require('./useragent_generator');
                  'Connection': 'keep-alive',
             });
 
-             try {
-                console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
+            try {
+                 console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
 
-                 const start = Date.now();
-                const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 5000 });
-                console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
-
+                const start = Date.now();
+                 const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 5000 });
+                 console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
 
                 // Initialize the console-ban script with some specific options to prevent redirection
-                  await page.evaluate(() => {
-                    if(window.ConsoleBan && window.ConsoleBan.init){
-                       window.ConsoleBan.init({
-                            redirect: null,
-                            clear:false,
-                            debug:false,
+                 await page.evaluate(() => {
+                   if(window.ConsoleBan && window.ConsoleBan.init){
+                      window.ConsoleBan.init({
+                           redirect: null,
+                           clear:false,
+                           debug:false,
                             callback:null,
-                            write:null
-                        })
+                         write:null
+                      })
+                     }
+                });
+                 console.log("\x1b[32m Console-ban script initialized. \x1b[0m");
+
+               // Wait for the Clappr player to be initialized
+                 try{
+                    await page.waitForFunction(() => window.Clappr !== undefined, { timeout: CLAPPR_TIMEOUT });
+                     console.log("\x1b[32m Clappr player initialized. \x1b[0m");
+                  } catch(e){
+                     console.log("\x1b[33mTimeout waiting for Clappr. \x1b[0m");
+                     try{
+                        const scriptContent = await page.$eval('#player > div > script', el => el.textContent);
+                        console.log('\x1b[33m Player script:\x1b[0m', scriptContent);
+                     } catch(e2){
+                      console.log('\x1b[33mCould not log script:\x1b[0m');
                       }
-                  });
-               console.log("\x1b[32m Console-ban script initialized. \x1b[0m");
-
-
-                  // Wait for the Clappr player to be initialized
-                 await page.waitForFunction(() => window.Clappr !== undefined, { timeout: 10000 });
-                 console.log("\x1b[32m Clappr player initialized. \x1b[0m");
-
-
+                      try{
+                       await page.waitForSelector('#player > div > div.container[data-container] > video', { timeout: CLAPPR_TIMEOUT });
+                       console.log("\x1b[32m Video Element Loaded\x1b[0m");
+                      } catch(e3){
+                           console.log("\x1b[33mTimeout waiting for video element.\x1b[0m");
+                      }
+                      await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                   continue; // Skip the page and continue with the next.
+                 }
 
                  const decodedM3U8 = await page.evaluate(() => {
-                    try {
-                       const sourceMatch = document.querySelector('#player > div > script').textContent.match(/source:\s*window\.atob\('(.*?)'\)/);
+                      try {
+                         const sourceMatch = document.querySelector('#player > div > script').textContent.match(/source:\s*window\.atob\('(.*?)'\)/);
                        if (sourceMatch && sourceMatch[1]) {
-                          return window.atob(sourceMatch[1]);
+                           return window.atob(sourceMatch[1]);
                         } else{
-                             return  Promise.reject('M3U8 URL not found in content');
-                        }
+                           return  Promise.reject('M3U8 URL not found in content');
+                       }
                      } catch (e) {
-                           return  Promise.reject(e);
-                     }
+                         return  Promise.reject(e);
+                      }
                  });
 
-                  const streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
-                    m3u8Links.add({ streamName, url: decodedM3U8, referer:  'https://foothubhd.org/' });
-                     console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${decodedM3U8}`);
-
-
+                   const streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
+                  m3u8Links.add({ streamName, url: decodedM3U8, referer:  'https://foothubhd.org/' });
+                 console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${decodedM3U8}`);
 
                 await delay(5000); // Add delay between page loads.
 
-
-
-             } catch (navigationError) {
-               console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
-                 await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-           } finally {
+            } catch (navigationError) {
+                console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
+                  await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+             } finally {
                 await page.close();
             }
         }
 
-        // Ταξιvόμηση και αποθήκευση των URLs
+
+        // Taξιvόμηση και αποθήκευση των URLs
         const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName));
         let playlistContent = "#EXTM3U\n";
-         parsedLinks.forEach(entry => {
-             playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
+        parsedLinks.forEach(entry => {
+           playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
         });
-        fs.writeFileSync('playlist.m3u8', playlistContent);
+       fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
            console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
         } else {
-             console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
-         }
+          console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
+       }
 
-
-    } catch (error) {
-         console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
-    } finally {
-         if (browser) {
-             await browser.close();
-        }
+     } catch (error) {
+       console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
+     } finally {
+        if (browser) {
+            await browser.close();
+       }
     }
 })();
