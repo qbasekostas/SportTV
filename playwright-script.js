@@ -16,7 +16,8 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
     const m3u8Links = new Set();
     let browser;
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+     const delay = ms => new Promise(res => setTimeout(res, ms));
+
 
     try {
         console.log("\x1b[34mStarting Playwright...\x1b[0m");
@@ -25,16 +26,27 @@ const { getRandomUserAgent } = require('./useragent_generator');
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
 
-            //Remove user agent
-            // const randomUserAgent = getRandomUserAgent();
+             //Remove user agent
+           //  const randomUserAgent = getRandomUserAgent();
              await page.setExtraHTTPHeaders({
-                //'User-Agent': randomUserAgent,
+               // 'User-Agent': randomUserAgent,
                  'Referer': 'https://foothubhd.org/',
                  'Origin': 'https://foothubhd.org',
-                'Accept': '*/*',
-               'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
+                 'Accept': '*/*',
+                'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Connection': 'keep-alive',
             });
+
+              // Network logging
+             page.on('request', request => {
+                  console.log('\x1b[35m >> Request:\x1b[0m', request.method(), request.url());
+             });
+
+             page.on('response', response => {
+                console.log('\x1b[36m << Response:\x1b[0m', response.status(), response.url());
+               // response.headers().then(headers => console.log("Headers:", headers));
+             });
+
 
 
             try {
@@ -42,22 +54,33 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
                 const start = Date.now();
 
-                const response = await page.goto(targetUrl, { waitUntil: 'load', timeout:5000 });
-                 console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
-                 const content = await response.text();
+                const response = await page.goto(targetUrl, { waitUntil: 'load', timeout: 5000 });
+                console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
 
+                const content = await page.evaluate(async () => {
+                   try{
+                        const response = await fetch(window.location.href);
+                       if (!response.ok) {
+                         throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                      return await response.text();
+                   } catch (e){
+                     return  Promise.reject(e);
+                   }
+                });
+                console.log('\x1b[32m Response text fetched. \x1b[0m');
 
-                // Extract the source from the javascript code
-                const sourceMatch = content.match(/source:\s*window\.atob\('(.*?)'\)/);
+               // Extract the source from the javascript code
+               const sourceMatch = content.match(/source:\s*window\.atob\('(.*?)'\)/);
                 if (sourceMatch && sourceMatch[1]) {
-                   const decodedM3U8 = Buffer.from(sourceMatch[1], 'base64').toString('utf-8');
+                    const decodedM3U8 = Buffer.from(sourceMatch[1], 'base64').toString('utf-8');
                     const streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
-                     m3u8Links.add({ streamName, url: decodedM3U8, referer:  'https://foothubhd.org/' });
+                    m3u8Links.add({ streamName, url: decodedM3U8, referer:  'https://foothubhd.org/' });
                     console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${decodedM3U8}`);
-                } else {
-                    console.log("\x1b[33m⚠️ .m3u8 URL not found in content.\x1b[0m", targetUrl);
-                   await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                 }
+               } else {
+                   console.log("\x1b[33m⚠️ .m3u8 URL not found in content.\x1b[0m", targetUrl);
+                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                }
 
 
                  await delay(5000); // Add delay between page loads.
@@ -70,7 +93,7 @@ const { getRandomUserAgent } = require('./useragent_generator');
             }
         }
 
-         // Ταξινόμηση και αποθήκευση των URLs
+        // Taξιvόμηση και αποθήκευση των URLs
         const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName));
         let playlistContent = "#EXTM3U\n";
         parsedLinks.forEach(entry => {
@@ -79,13 +102,13 @@ const { getRandomUserAgent } = require('./useragent_generator');
         fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
-             console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
-        } else {
-             console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
-         }
+            console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
+       } else {
+           console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
+        }
 
     } catch (error) {
-       console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
+        console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
     } finally {
         if (browser) {
              await browser.close();
