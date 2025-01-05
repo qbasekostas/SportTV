@@ -41,16 +41,6 @@ const { getRandomUserAgent } = require('./useragent_generator');
                 console.log("\x1b[31m Javascript error:\x1b[0m", err.message, err.stack, targetUrl)
             });
 
-            page.on('response', async (response) => {
-           const url = response.url();
-         if (url.includes('tracks-v1a1') && url.endsWith('.m3u8')) {
-          const referer = response.request().headers()['referer'] || 'https://foothubhd.org/';
-          const streamName = `channel${index + 1}`;
-          m3u8Links.add({ streamName, url, referer });
-          console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m`, url);
-          }
-          });
-
             try {
                console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
                  const start = Date.now();
