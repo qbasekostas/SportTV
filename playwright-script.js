@@ -35,40 +35,50 @@ const fs = require('fs');
 
             // Επεξεργασία απαντήσεων δικτύου
             page.on('response', async (response) => {
-                 const url = response.url();
-                 if (url.endsWith('.m3u8')) {
+                const url = response.url();
+                if (url.endsWith('.m3u8')) {
                      if (!response.ok()) {
                          console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
                          return;
                      }
-                     const referer = response.request().headers()['referer'] || 'N/A';
-                     const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                     m3u8Links.add({ streamName, url, referer });
-                     console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
-                 }
-             });
+                    const referer = response.request().headers()['referer'] || 'N/A';
+                    const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
+                    m3u8Links.add({ streamName, url, referer });
+                    console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
+                }
+            });
 
 
             try {
                 console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'networkidle' });
 
+
                  // Wait for the player to load
+                 const videoSelector = '#jwplayer_0 > div > div.jw-media.jw-reset > video';
+                 console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
                  try{
-                   await page.waitForSelector('#jwplayer_0 > div > div.jw-media.jw-reset > video',{timeout: 10000});
+                   await page.waitForSelector(videoSelector,{timeout: 10000});
                    console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl)
                  }
                  catch(waitError){
                    console.log("\x1b[33mTimeout waiting for player:\x1b[0m", targetUrl);
+                   await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                   continue; // Skip the page and continue with the next.
                  }
 
 
                  // Attempt to play the video (simulate a click on the play button - this sometimes triggers the m3u8)
+                 const playButtonSelector = '#jwplayer_0 > div > div.jw-controls.jw-reset > div.jw-button-container.jw-reset > div.jw-icon.jw-icon-display.jw-button-color.jw-reset'
+
+                 console.log('\x1b[35m Waiting for Play Button:', playButtonSelector,'\x1b[0m');
+
                  try {
-                    await page.click('#jwplayer_0 > div > div.jw-controls.jw-reset > div.jw-button-container.jw-reset > div.jw-icon.jw-icon-display.jw-button-color.jw-reset',{timeout: 10000});
+                    await page.click(playButtonSelector,{timeout: 10000});
                     console.log("\x1b[32mClicked Play button\x1b[0m");
                    } catch (clickError){
                      console.log("\x1b[33mCould not click Play button or not present:\x1b[0m", targetUrl);
+                       await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
                    }
 
 
