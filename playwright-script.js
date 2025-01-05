@@ -4,7 +4,7 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
 (async () => {
     const targetUrls = [
-       'https://foothubhd.org/cdn3/linka.php',
+        'https://foothubhd.org/cdn3/linka.php',
         'https://foothubhd.org/cdn3/linkb.php',
         'https://foothubhd.org/cdn3/linkc.php',
         'https://foothubhd.org/cdn3/linkd.php',
