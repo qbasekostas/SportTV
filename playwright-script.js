@@ -85,7 +85,7 @@ const re = require('node:util').promisify(require('node:child_process').exec);
                    } catch(e){
                         console.error("\x1b[31mError in response handler:\x1b[0m", response.url(),e)
                     }
-            });
+            };
 
               try {
                   console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
