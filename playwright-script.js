@@ -96,7 +96,6 @@ const re = require('node:util').promisify(require('node:child_process').exec);
            } finally{
                 await page.close();
             }
-        }
 
         const parsedLinks = Array.from(m3u8Links);
         parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
