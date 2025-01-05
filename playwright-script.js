@@ -4,7 +4,7 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
 (async () => {
     const targetUrls = [
-        'https://foothubhd.org/cdn3/linka.php',
+       'https://foothubhd.org/cdn3/linka.php',
         'https://foothubhd.org/cdn3/linkb.php',
         'https://foothubhd.org/cdn3/linkc.php',
         'https://foothubhd.org/cdn3/linkd.php',
@@ -16,6 +16,8 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
     const m3u8Links = new Set();
     let browser;
+     const delay = ms => new Promise(res => setTimeout(res, ms));
+
 
     try {
         console.log("\x1b[34mStarting Playwright...\x1b[0m");
@@ -38,17 +40,17 @@ const { getRandomUserAgent } = require('./useragent_generator');
 
             // Επεξεργασία απαντήσεων δικτύου
             page.on('response', async (response) => {
-               const url = response.url();
-               if (url.endsWith('.m3u8')) {
-                   if (!response.ok()) {
-                       console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
-                       return;
-                   }
-                   const referer = response.request().headers()['referer'] || 'N/A';
-                   const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                   m3u8Links.add({ streamName, url, referer });
-                   console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
-               }
+                const url = response.url();
+                if (url.endsWith('.m3u8')) {
+                     if (!response.ok()) {
+                         console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
+                         return;
+                     }
+                    const referer = response.request().headers()['referer'] || 'N/A';
+                    const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
+                    m3u8Links.add({ streamName, url, referer });
+                    console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
+                }
             });
 
 
@@ -56,39 +58,38 @@ const { getRandomUserAgent } = require('./useragent_generator');
                 console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'networkidle' });
 
+                //Check if the jwplayer exists before waiting on the video
+                  await delay(5000); // Add delay between page loads.
+                   await page.mouse.move(100, 100);
+                const jwPlayerCheck = await page.evaluate(() => document.getElementById('jwplayer_0'));
+                if(!jwPlayerCheck){
+                    console.log("\x1b[33m jwplayer not found, skipping this page \x1b[0m",targetUrl);
+                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                    continue;
+                }
                  // Wait for the player to load
                  const videoSelector = '#jwplayer_0 > div > div.jw-media.jw-reset > video';
                 console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
-                 let playerElement;
+                let playerElement;
+
                  try{
-                     console.log("\x1b[36m Before Waiting \x1b[0m");
-                    //Check if the jwplayer exists before waiting on the video
-                    const jwPlayerCheck = await page.evaluate(() => document.getElementById('jwplayer_0'));
-                    if(!jwPlayerCheck){
-                        console.log("\x1b[33m jwplayer not found, skipping this page \x1b[0m",targetUrl);
-                        await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                        continue;
-                    }
-                    //Try a mouse move to see if it triggers the video player
-                     await page.mouse.move(100, 100);
+                    console.log("\x1b[36m Before Waiting \x1b[0m");
                     playerElement =  await page.waitForSelector(videoSelector,{timeout: 10000});
                     console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl);
                   }
                  catch(waitError){
-                     console.log("\x1b[31mTimeout waiting for player:\x1b[0m", targetUrl);
-                      await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                        if(playerElement){
+                    console.log("\x1b[31mTimeout waiting for player:\x1b[0m", targetUrl);
+                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                    if(playerElement){
                            const isVisible = await playerElement.isVisible();
                             console.log("\x1b[31mPlayer Element visibility state when timeout: \x1b[0m",isVisible);
                           } else{
                             console.log("\x1b[31mPlayer Element does not exist when timeout. \x1b[0m");
                           }
-                     continue; // Skip the page and continue with the next.
+                   continue; // Skip the page and continue with the next.
                    }
 
-
                 await page.waitForTimeout(5000); // Keep this to allow time for the m3u8 request
-
 
             } catch (navigationError) {
                 console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
