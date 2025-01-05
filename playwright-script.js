@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
+const { getRandomUserAgent } = require('./useragent_generator');
 
 (async () => {
     const targetUrls = [
@@ -23,9 +24,11 @@ const fs = require('fs');
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
 
-            // Προσαρμοσμένες κεφαλίδες
-            await page.setExtraHTTPHeaders({
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            //Random User Agent Header
+           const randomUserAgent = getRandomUserAgent();
+
+           await page.setExtraHTTPHeaders({
+                'User-Agent': randomUserAgent,
                 'Referer': 'https://foothubhd.org/',
                 'Origin': 'https://foothubhd.org',
                 'Accept': '*/*',
@@ -35,17 +38,17 @@ const fs = require('fs');
 
             // Επεξεργασία απαντήσεων δικτύου
             page.on('response', async (response) => {
-                const url = response.url();
-                if (url.endsWith('.m3u8')) {
-                     if (!response.ok()) {
-                         console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
-                         return;
-                     }
-                    const referer = response.request().headers()['referer'] || 'N/A';
-                    const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                    m3u8Links.add({ streamName, url, referer });
-                    console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
-                }
+               const url = response.url();
+               if (url.endsWith('.m3u8')) {
+                   if (!response.ok()) {
+                       console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
+                       return;
+                   }
+                   const referer = response.request().headers()['referer'] || 'N/A';
+                   const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
+                   m3u8Links.add({ streamName, url, referer });
+                   console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
+               }
             });
 
 
@@ -53,37 +56,28 @@ const fs = require('fs');
                 console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'networkidle' });
 
-
                  // Wait for the player to load
                  const videoSelector = '#jwplayer_0 > div > div.jw-media.jw-reset > video';
-                 console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
+                console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
+                 let playerElement;
                  try{
-                   await page.waitForSelector(videoSelector,{timeout: 10000});
-                   console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl)
-                 }
+                    console.log("\x1b[36m Before Waiting \x1b[0m");
+                   playerElement =  await page.waitForSelector(videoSelector,{timeout: 10000});
+                    console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl);
+                  }
                  catch(waitError){
-                   console.log("\x1b[33mTimeout waiting for player:\x1b[0m", targetUrl);
-                   await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                   continue; // Skip the page and continue with the next.
-                 }
-
-
-                 // Attempt to play the video (simulate a click on the play button - this sometimes triggers the m3u8)
-                 const playButtonSelector = '#jwplayer_0 > div > div.jw-controls.jw-reset > div.jw-button-container.jw-reset > div.jw-icon.jw-icon-display.jw-button-color.jw-reset'
-
-                 console.log('\x1b[35m Waiting for Play Button:', playButtonSelector,'\x1b[0m');
-
-                 try {
-                    await page.click(playButtonSelector,{timeout: 10000});
-                    console.log("\x1b[32mClicked Play button\x1b[0m");
-                   } catch (clickError){
-                     console.log("\x1b[33mCould not click Play button or not present:\x1b[0m", targetUrl);
-                       await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                     console.log("\x1b[31mTimeout waiting for player:\x1b[0m", targetUrl);
+                     await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                        if(playerElement){
+                           const isVisible = await playerElement.isVisible();
+                            console.log("\x1b[31mPlayer Element visibility state when timeout: \x1b[0m",isVisible);
+                          } else{
+                            console.log("\x1b[31mPlayer Element does not exist when timeout. \x1b[0m");
+                          }
+                     continue; // Skip the page and continue with the next.
                    }
 
-
-                await page.waitForTimeout(10000); // Keep this to allow time for the m3u8 request
-
+                await page.waitForTimeout(5000); // Keep this to allow time for the m3u8 request
 
             } catch (navigationError) {
                 console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
