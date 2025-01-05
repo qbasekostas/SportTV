@@ -61,13 +61,22 @@ const { getRandomUserAgent } = require('./useragent_generator');
                 console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
                  let playerElement;
                  try{
-                    console.log("\x1b[36m Before Waiting \x1b[0m");
-                   playerElement =  await page.waitForSelector(videoSelector,{timeout: 10000});
+                     console.log("\x1b[36m Before Waiting \x1b[0m");
+                    //Check if the jwplayer exists before waiting on the video
+                    const jwPlayerCheck = await page.evaluate(() => document.getElementById('jwplayer_0'));
+                    if(!jwPlayerCheck){
+                        console.log("\x1b[33m jwplayer not found, skipping this page \x1b[0m",targetUrl);
+                        await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                        continue;
+                    }
+                    //Try a mouse move to see if it triggers the video player
+                     await page.mouse.move(100, 100);
+                    playerElement =  await page.waitForSelector(videoSelector,{timeout: 10000});
                     console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl);
                   }
                  catch(waitError){
                      console.log("\x1b[31mTimeout waiting for player:\x1b[0m", targetUrl);
-                     await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                      await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
                         if(playerElement){
                            const isVisible = await playerElement.isVisible();
                             console.log("\x1b[31mPlayer Element visibility state when timeout: \x1b[0m",isVisible);
@@ -77,7 +86,9 @@ const { getRandomUserAgent } = require('./useragent_generator');
                      continue; // Skip the page and continue with the next.
                    }
 
+
                 await page.waitForTimeout(5000); // Keep this to allow time for the m3u8 request
+
 
             } catch (navigationError) {
                 console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
