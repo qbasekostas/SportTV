@@ -95,7 +95,7 @@ const fs = require('fs');
                 // Modify m3u8 URL
                  let modifiedM3U8 = decodedM3U8;
                  if (modifiedM3U8.includes('index')) {
-                       modifiedM3U8 = modifiedM3U8.replace('index', 'tracks-v1a1');
+                       modifiedM3U8 = modifiedM3U8.replace('index', 'tracks-v1a1/mono');
                      console.log("\x1b[33mModified m3u8 URL:\x1b[0m", decodedM3U8," \x1b[32mto:\x1b[0m", modifiedM3U8);
                  }
 
