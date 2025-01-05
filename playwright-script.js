@@ -62,18 +62,17 @@ const { getRandomUserAgent } = require('./useragent_generator');
                 console.log("\x1b[32m Console-ban script initialized. \x1b[0m");
 
 
-                   // Wait for a specific Clappr video element
-                   try{
-                      const videoSelector = '#player > div > div.jw-media.jw-reset > video';
-                      console.log('\x1b[35m Waiting for Clappr Video element:', videoSelector,'\x1b[0m');
-                      await page.waitForSelector(videoSelector, { timeout: CLAPPR_TIMEOUT });
-                     console.log("\x1b[32m Clappr video element loaded.\x1b[0m");
+                  //Wait for the player's container div
+                 try {
+                   const playerSelector = '#player > div[data-player]';
+                     console.log('\x1b[35m Waiting for Clappr container:', playerSelector,'\x1b[0m');
+                     await page.waitForSelector(playerSelector, { timeout: CLAPPR_TIMEOUT });
+                       console.log("\x1b[32m Clappr container found.\x1b[0m");
+                    } catch (error) {
+                      console.log("\x1b[33mTimeout waiting for Clappr container.\x1b[0m",targetUrl);
+                      await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                      continue;
                   }
-                  catch(e){
-                    console.log("\x1b[33mTimeout waiting for video element\x1b[0m", targetUrl);
-                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                    continue; // Skip the page and continue with the next.
-                 }
 
 
                    let decodedM3U8;
