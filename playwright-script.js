@@ -26,10 +26,10 @@ const { getRandomUserAgent } = require('./useragent_generator');
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
 
-            //Random User Agent Header
+           //Random User Agent Header
            const randomUserAgent = getRandomUserAgent();
 
-           await page.setExtraHTTPHeaders({
+            await page.setExtraHTTPHeaders({
                 'User-Agent': randomUserAgent,
                 'Referer': 'https://foothubhd.org/',
                 'Origin': 'https://foothubhd.org',
@@ -38,59 +38,26 @@ const { getRandomUserAgent } = require('./useragent_generator');
                 'Connection': 'keep-alive',
             });
 
-            // Επεξεργασία απαντήσεων δικτύου
-            page.on('response', async (response) => {
-                const url = response.url();
-                if (url.endsWith('.m3u8')) {
-                     if (!response.ok()) {
-                         console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
-                         return;
-                     }
-                    const referer = response.request().headers()['referer'] || 'N/A';
-                    const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                    m3u8Links.add({ streamName, url, referer });
-                    console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
-                }
-            });
 
 
             try {
-                console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
-                await page.goto(targetUrl, { waitUntil: 'networkidle' });
+                console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
+               const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+               const content = await response.text();
 
-                //Check if the jwplayer exists before waiting on the video
-                  await delay(5000); // Add delay between page loads.
-                   await page.mouse.move(100, 100);
-                const jwPlayerCheck = await page.evaluate(() => document.getElementById('jwplayer_0'));
-                if(!jwPlayerCheck){
-                    console.log("\x1b[33m jwplayer not found, skipping this page \x1b[0m",targetUrl);
-                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                    continue;
-                }
-                 // Wait for the player to load
-                 const videoSelector = '#jwplayer_0 > div > div.jw-media.jw-reset > video';
-                console.log('\x1b[35m Waiting for Player Element:', videoSelector,'\x1b[0m');
-                let playerElement;
 
-                 try{
-                    console.log("\x1b[36m Before Waiting \x1b[0m");
-                    playerElement =  await page.waitForSelector(videoSelector,{timeout: 10000});
-                    console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl);
-                  }
-                 catch(waitError){
-                    console.log("\x1b[31mTimeout waiting for player:\x1b[0m", targetUrl);
-                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                    if(playerElement){
-                           const isVisible = await playerElement.isVisible();
-                            console.log("\x1b[31mPlayer Element visibility state when timeout: \x1b[0m",isVisible);
-                          } else{
-                            console.log("\x1b[31mPlayer Element does not exist when timeout. \x1b[0m");
-                          }
-                   continue; // Skip the page and continue with the next.
-                   }
-
-                await page.waitForTimeout(5000); // Keep this to allow time for the m3u8 request
-
+                // Extract the source from the javascript code
+                const sourceMatch = content.match(/source:\s*window\.atob\('(.*?)'\)/);
+                if (sourceMatch && sourceMatch[1]) {
+                    const decodedM3U8 = Buffer.from(sourceMatch[1], 'base64').toString('utf-8');
+                     const streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
+                     m3u8Links.add({ streamName, url: decodedM3U8, referer:  'https://foothubhd.org/' });
+                     console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${decodedM3U8}`);
+                } else {
+                    console.log("\x1b[33m⚠️ .m3u8 URL not found in content.\x1b[0m", targetUrl);
+                     await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                 }
+              await delay(5000); // Add delay between page loads.
             } catch (navigationError) {
                 console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
             } finally {
