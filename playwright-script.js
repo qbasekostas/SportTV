@@ -35,21 +35,48 @@ const fs = require('fs');
 
             // Επεξεργασία απαντήσεων δικτύου
             page.on('response', async (response) => {
-                const url = response.url();
-                if (url.endsWith('.m3u8')) {
-                    const referer = response.request().headers()['referer'] || 'N/A';
-                    const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
-                    m3u8Links.add({ streamName, url, referer });
-                    console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
-                }
-            });
+                 const url = response.url();
+                 if (url.endsWith('.m3u8')) {
+                     if (!response.ok()) {
+                         console.log('\x1b[31m Failed Response:\x1b[0m', response.status(), url);
+                         return;
+                     }
+                     const referer = response.request().headers()['referer'] || 'N/A';
+                     const streamName = new URL(url).pathname.split('/').slice(-2, -1)[0];
+                     m3u8Links.add({ streamName, url, referer });
+                     console.log(`\x1b[32mFound .m3u8 URL:\x1b[0m ${url}`);
+                 }
+             });
+
 
             try {
                 console.log("\x1b[34mNavigating to page:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'networkidle' });
-                await page.waitForTimeout(10000); // Περιμένετε 10 δευτερόλεπτα για να φορτώσουν όλα τα δεδομένα
+
+                 // Wait for the player to load
+                 try{
+                   await page.waitForSelector('#jwplayer_0 > div > div.jw-media.jw-reset > video',{timeout: 10000});
+                   console.log("\x1b[32mPlayer loaded.\x1b[0m", targetUrl)
+                 }
+                 catch(waitError){
+                   console.log("\x1b[33mTimeout waiting for player:\x1b[0m", targetUrl);
+                 }
+
+
+                 // Attempt to play the video (simulate a click on the play button - this sometimes triggers the m3u8)
+                 try {
+                    await page.click('#jwplayer_0 > div > div.jw-controls.jw-reset > div.jw-button-container.jw-reset > div.jw-icon.jw-icon-display.jw-button-color.jw-reset',{timeout: 10000});
+                    console.log("\x1b[32mClicked Play button\x1b[0m");
+                   } catch (clickError){
+                     console.log("\x1b[33mCould not click Play button or not present:\x1b[0m", targetUrl);
+                   }
+
+
+                await page.waitForTimeout(10000); // Keep this to allow time for the m3u8 request
+
+
             } catch (navigationError) {
-                console.error("\x1b[31mError navigating to page:\x1b[0m", navigationError, targetUrl);
+                console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
             } finally {
                 await page.close();
             }
