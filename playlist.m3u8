@@ -14,6 +14,9 @@ https://toulis.pantopilonis.xyz/channel4/tracks-v1a1/mono.m3u8
 #EXTINF:-1,channel5
 #EXTVLCOPT:http-referrer=https://foothubhd.org/
 https://toulis.pantopilonis.xyz/channel5/tracks-v1a1/mono.m3u8
+#EXTINF:-1,channel6
+#EXTVLCOPT:http-referrer=https://foothubhd.org/
+https://toulis.pantopilonis.xyz/channel6/tracks-v1a1/mono.m3u8
 #EXTINF:-1,channel7
 #EXTVLCOPT:http-referrer=https://foothubhd.org/
 https://toulis.pantopilonis.xyz/channel7/tracks-v1a1/mono.m3u8
