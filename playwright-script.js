@@ -3,14 +3,14 @@ const fs = require('fs');
 
 (async () => {
     const targetUrls = [
-        'https://foothubhd.org/cdn3/linka.php',
-        'https://foothubhd.org/cdn3/linkb.php',
-        'https://foothubhd.org/cdn3/linkc.php',
-        'https://foothubhd.org/cdn3/linkd.php',
-        'https://foothubhd.org/cdn3/linke.php',
-        'https://foothubhd.org/cdn3/linkf.php',
-        'https://foothubhd.org/cdn3/linkg.php',
-        'https://foothubhd.org/cdn3/linkh.php'
+        'https://foothubhd.online/cdn3/linka.php',
+        'https://foothubhd.online/cdn3/linkb.php',
+        'https://foothubhd.online/cdn3/linkc.php',
+        'https://foothubhd.online/cdn3/linkd.php',
+        'https://foothubhd.online/cdn3/linke.php',
+        'https://foothubhd.online/cdn3/linkf.php',
+        'https://foothubhd.online/cdn3/linkg.php',
+        'https://foothubhd.online/cdn3/linkh.php'
     ];
 
     const m3u8Links = new Set();
@@ -26,11 +26,10 @@ const fs = require('fs');
             const page = await browser.newPage();
 
             const randomUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-            const referer = new URL(targetUrl).origin;
             await page.setExtraHTTPHeaders({
                 'User-Agent': randomUserAgent,
-                'Referer': referer,
-                'Origin': referer,
+                'Referer': 'https://foothubhd.online/',
+                'Origin': 'https://foothubhd.online',
                 'Accept': '*/*',
                 'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Connection': 'keep-alive',
@@ -100,7 +99,7 @@ const fs = require('fs');
                      console.log("\x1b[33mModified m3u8 URL:\x1b[0m", decodedM3U8," \x1b[32mto:\x1b[0m", modifiedM3U8);
                  }
 
-                m3u8Links.add({ streamName, url: modifiedM3U8, referer });
+                m3u8Links.add({ streamName, url: modifiedM3U8, referer: 'https://foothubhd.online/' });
 
                 await delay(5000); // Add delay between page loads.
 
