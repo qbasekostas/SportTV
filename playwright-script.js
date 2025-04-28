@@ -10,7 +10,9 @@ const fs = require('fs');
         'https://foothubhd.online/cdn3/linke.php',
         'https://foothubhd.online/cdn3/linkf.php',
         'https://foothubhd.online/cdn3/linkg.php',
-        'https://foothubhd.online/cdn3/linkh.php'
+        'https://foothubhd.online/cdn3/linkh.php',
+        'https://foothubhd.online/streams/f1.php',
+        'https://foothubhd.online/cast/1/f1.php'
     ];
 
     const m3u8Links = new Set();
