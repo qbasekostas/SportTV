@@ -11,234 +11,249 @@ const fs = require('fs');
         'https://foothubhd.online/cdn3/linkf.php',
         'https://foothubhd.online/cdn3/linkg.php',
         'https://foothubhd.online/cdn3/linkh.php',
-        'https://foothubhd.online/streams/f1.php',
-        'https://foothubhd.online/cast/1/f1.php'
+        'https://foothubhd.online/streams/f1.php', // This one might still fail if the page is broken/slow
+        'https://foothubhd.online/cast/1/f1.php'  // This one likely has an iframe
         // Add more URLs here if needed
     ];
 
-    const m3u8Links = new Set(); // Using a Set to avoid duplicates based on object content might be tricky, let's use an array and check later or structure the set entry carefully. Let's store objects {streamName, url, referer}.
     const foundLinks = new Map(); // Use a Map to store unique URLs and their associated data {referer, streamName}
-
     let browser;
     const delay = ms => new Promise(res => setTimeout(res, ms));
-    const CLAPPR_TIMEOUT = 20000; // 20 seconds timeout for finding the player
+    const PAGE_LOAD_TIMEOUT = 30000; // Increased page load timeout to 30 seconds
+    const CLAPPR_TIMEOUT = 25000; // Increased player timeout slightly
+
+    // --- DEFINE randomUserAgent OUTSIDE THE LOOP ---
+    const randomUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
     try {
         console.log("\x1b[34mStarting Playwright with Firefox...\x1b[0m");
-        // Using firefox as in the original script
         browser = await firefox.launch({ headless: true, args: ['--no-sandbox'] });
-        // Or use chromium if firefox causes issues:
-        // browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
+        // browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] }); // Option to try Chromium
 
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
 
-            // --- AUTOMATIC REFERER DETECTION ---
-            // Derive Referer and Origin from the target URL itself
             const urlObject = new URL(targetUrl);
-            const dynamicReferer = `${urlObject.origin}/`; // Often, the origin is sufficient as referer for embedded content
+            const dynamicReferer = `${urlObject.origin}/`;
             const dynamicOrigin = urlObject.origin;
             console.log(`\x1b[36mUsing dynamic Referer: ${dynamicReferer} for ${targetUrl}\x1b[0m`);
-            // --- END AUTOMATIC REFERER DETECTION ---
 
-            const randomUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'; // Keep User-Agent consistent or randomize more if needed
-
-            // Set headers using the dynamic referer and origin
             await page.setExtraHTTPHeaders({
                 'User-Agent': randomUserAgent,
-                'Referer': dynamicReferer, // Use the dynamic referer
-                'Origin': dynamicOrigin, // Use the dynamic origin
+                'Referer': dynamicReferer,
+                'Origin': dynamicOrigin,
                 'Accept': '*/*',
                 'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
                 'Connection': 'keep-alive',
-                // Add other headers if necessary, e.g., Sec-Fetch-* might be checked by some sites
-                'Sec-Fetch-Dest': 'iframe',
+                'Sec-Fetch-Dest': 'iframe', // Keep this, might be relevant for iframes
                 'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'same-origin', // Adjust if the target is cross-origin relative to the *real* parent page
+                'Sec-Fetch-Site': 'same-origin', // Or 'cross-site' if iframe src is different domain
             });
 
-            // Log JavaScript errors from the page
             page.on('pageerror', (err) => {
-                console.log(`\x1b[31m[Page Error - ${targetUrl}]\x1b[0m ${err.message}`);
-                // console.error(err.stack); // Uncomment for full stack trace
-            });
-            // Log console messages from the page (optional, can be verbose)
-            /*
-            page.on('console', msg => {
-                if (msg.type() === 'error') {
-                    console.log(`\x1b[31m[Page Console Error - ${targetUrl}]\x1b[0m ${msg.text()}`);
-                } else {
-                   // console.log(`[Page Console - ${targetUrl}] ${msg.text()}`);
+                // Ignore common, often harmless errors if they clutter logs too much
+                if (!err.message.includes('favicon.ico')) { // Example: ignore favicon errors
+                   console.log(`\x1b[31m[Page Error - ${targetUrl}]\x1b[0m ${err.message}`);
                 }
             });
+             /*
+            page.on('console', msg => {
+                 if (msg.type() === 'error' && !msg.text().includes('favicon')) {
+                     console.log(`\x1b[31m[Page Console Error - ${targetUrl}]\x1b[0m ${msg.text()}`);
+                 }
+            });
             */
+
+            let pageClosed = false; // Flag to prevent operations on closed page
 
             try {
                 console.log(`\x1b[34mFetching page content: ${targetUrl}\x1b[0m`);
                 const start = Date.now();
-                // Increased timeout for navigation slightly
-                const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                // --- ADJUSTED GOTO ---
+                const response = await page.goto(targetUrl, {
+                    waitUntil: 'load', // Changed from 'domcontentloaded' to 'load'
+                    timeout: PAGE_LOAD_TIMEOUT // Use increased timeout
+                });
                 console.log(`\x1b[33mPage loaded with status: ${response?.status()} for ${targetUrl} in ${Date.now() - start}ms\x1b[0m`);
 
-                 // Attempt to disable ConsoleBan or similar anti-debugging measures
                  try {
                     await page.evaluate(() => {
                         if (typeof window.ConsoleBan === 'object' && window.ConsoleBan.init) {
-                            window.ConsoleBan.init = () => {}; // Neutralize init
+                            window.ConsoleBan.init = () => {};
                             console.log('Attempted to neutralize ConsoleBan.init');
                         }
-                        // Add other potential anti-debug measures here if needed
                     });
                     console.log("\x1b[32mAnti-debugging neutralization attempted.\x1b[0m");
                  } catch (evalError) {
-                    console.log("\x1b[33mCould not execute anti-debug neutralization script:\x1b[0m", evalError.message);
+                    // Ignore errors here, page might navigate away or close during eval
+                    if (!pageClosed) {
+                        console.log("\x1b[33mCould not execute anti-debug neutralization script (might be ok):\x1b[0m", evalError.message);
+                    }
                  }
 
-
+                // --- IFRAME HANDLING ---
+                let playerContext = page; // Default to page context
+                let isFrame = false;
+                // Try to find a likely iframe candidate
+                // Common selectors: iframe containing 'player', 'stream', 'video', or inside a #player div
+                const iframeSelector = '#player iframe, iframe[id*="player"], iframe[name*="player"], iframe[src*="player"], iframe[src*="stream"]';
                 try {
-                    // Wait for a common Clappr player container selector
-                    const playerSelector = '#player, [data-player], .player-container, .clappr-player'; // More generic selector
-                    console.log(`\x1b[35mWaiting for Player container (selector: ${playerSelector}) on ${targetUrl}\x1b[0m`);
-                    // Wait longer if needed, pages might load slowly
-                    await page.waitForSelector(playerSelector, { timeout: CLAPPR_TIMEOUT });
-                    console.log("\x1b[32mPlayer container found.\x1b[0m");
-                } catch (error) {
-                    console.log(`\x1b[31mTimeout or error waiting for Player container on ${targetUrl}.\x1b[0m`);
-                    // await page.screenshot({ path: `error_screenshot_player_not_found_${Date.now()}.png` }); // Screenshot on error
-                    // continue; // Skip to the next URL if player isn't found
-                     // Let's try to proceed anyway, maybe the evaluate will work
+                    console.log(`\x1b[35mChecking for potential player iframe (selector: ${iframeSelector}) on ${targetUrl}\x1b[0m`);
+                    const playerFrame = page.frameLocator(iframeSelector).first(); // Use .first() to avoid ambiguity if multiple match
+                    await playerFrame.waitFor({ state: 'attached', timeout: 5000 }); // Wait briefly for iframe to attach
+                    console.log("\x1b[32mPotential player iframe found. Targeting frame context.\x1b[0m");
+                    playerContext = playerFrame; // Switch context to the frame
+                    isFrame = true;
+                } catch (iframeError) {
+                    console.log(`\x1b[33mNo specific player iframe found or timed out waiting. Assuming player is on main page or iframe detection failed.\x1b[0m`);
+                    // Keep playerContext as 'page'
                 }
+                // --- END IFRAME HANDLING ---
 
-                let decodedM3U8;
+
+                let m3u8Url = null;
                 try {
-                    // Attempt to extract the M3U8 source from common player configurations
-                    decodedM3U8 = await page.evaluate(() => {
-                        // Check common player variable names and properties
-                        const potentialPlayers = [window.player, window.clappr, window.jwplayerInstance, document.querySelector('[data-player]')?.__vue__?.player]; // Add more potential player objects
+                    const playerSelector = '#player, [data-player], .player-container, .clappr-player, video'; // Added 'video' tag
+                    console.log(`\x1b[35mWaiting for Player element (selector: ${playerSelector}) in ${isFrame ? 'iframe' : 'main page'} context on ${targetUrl}\x1b[0m`);
+                    // Use playerContext (either page or frame) for waiting and evaluating
+                    await playerContext.locator(playerSelector).first().waitFor({ timeout: CLAPPR_TIMEOUT });
+                    console.log("\x1b[32mPlayer element found.\x1b[0m");
+
+                    // Attempt to extract the M3U8 source using evaluate on the correct context
+                    console.log(`\x1b[35mAttempting to extract M3U8 from ${isFrame ? 'iframe' : 'main page'} context...\x1b[0m`);
+                    m3u8Url = await playerContext.evaluate(() => {
+                        const potentialPlayers = [window.player, window.clappr, window.jwplayerInstance, document.querySelector('[data-player]')?.__vue__?.player];
                         for (const p of potentialPlayers) {
-                            if (p && p.options && p.options.source) {
-                                return p.options.source; // Clappr style
-                            }
-                            if (p && p.config && p.config.source) {
-                                return p.config.source; // Another common pattern
-                            }
-                             if (p && p.getSource) { // JW Player style
+                            if (p && p.options && p.options.source && typeof p.options.source === 'string' && p.options.source.includes('.m3u8')) return p.options.source;
+                            if (p && p.config && p.config.source && typeof p.config.source === 'string' && p.config.source.includes('.m3u8')) return p.config.source;
+                             if (p && typeof p.getSource === 'function') {
                                 const source = p.getSource();
-                                return source?.file;
+                                if (source?.file && typeof source.file === 'string' && source.file.includes('.m3u8')) return source.file;
                             }
                         }
-                        // Fallback: Search script tags for m3u8 URLs (less reliable)
+                         // Fallback: Check video tag source
+                        const videoElement = document.querySelector('video');
+                        if (videoElement && videoElement.src && videoElement.src.includes('.m3u8')) {
+                             return videoElement.src;
+                        }
+                         if (videoElement) {
+                             const sourceElement = videoElement.querySelector('source[src*=".m3u8"]');
+                             if (sourceElement) return sourceElement.src;
+                         }
+
+                        // Fallback: Search script tags (less reliable)
                         const scripts = Array.from(document.querySelectorAll('script'));
                         const m3u8Regex = /(https?:\/\/[^\s"']+\.m3u8[^\s"']*)/ig;
+                        let foundInScript = null;
                         for (const script of scripts) {
                             if (script.textContent) {
                                 const match = script.textContent.match(m3u8Regex);
                                 if (match) {
-                                    // Prioritize URLs likely related to 'source' or 'file'
-                                    if (/source\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i.test(script.textContent)) {
-                                        return script.textContent.match(/source\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i)[1];
-                                    }
-                                     if (/file\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i.test(script.textContent)) {
-                                        return script.textContent.match(/file\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i)[1];
-                                    }
-                                    // Otherwise, return the first found m3u8
-                                    return match[0];
+                                     if (/source\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i.test(script.textContent)) {
+                                         foundInScript = script.textContent.match(/source\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i)[1];
+                                         break; // Prioritize source:
+                                     }
+                                      if (!foundInScript && /file\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i.test(script.textContent)) {
+                                          foundInScript = script.textContent.match(/file\s*:\s*["'](https?:\/\/[^\s"']+\.m3u8[^\s"']*)["']/i)[1];
+                                      }
+                                      if (!foundInScript) foundInScript = match[0]; // Take first match as last resort
                                 }
                             }
                         }
-                        return null; // Return null if nothing found
+                        if(foundInScript) return foundInScript;
+
+                        return null;
                     });
 
-                    if (decodedM3U8 && typeof decodedM3U8 === 'string' && decodedM3U8.includes('.m3u8')) {
-                         console.log(`\x1b[32mFound .m3u8 URL: ${decodedM3U8}\x1b[0m`);
-
-                        // Extract a stream name (improved logic)
-                        let streamName = "Unknown Stream";
-                        try {
-                            // Try getting name from URL path segment before .m3u8 or a number/ID
-                            const pathSegments = new URL(decodedM3U8).pathname.split('/').filter(Boolean); // Remove empty segments
-                            if (pathSegments.length >= 2) {
-                                const potentialName = pathSegments[pathSegments.length - 2];
-                                // Check if it's not just a number or 'live' or 'index' etc.
-                                if (potentialName && isNaN(potentialName) && !['live', 'index', 'chunklist', 'playlist', 'stream'].includes(potentialName.toLowerCase())) {
-                                     streamName = potentialName;
-                                } else if (pathSegments.length >= 3) {
-                                     // Try segment before that if the last one was generic
-                                     const secondPotential = pathSegments[pathSegments.length - 3];
-                                     if(secondPotential && isNaN(secondPotential)) streamName = secondPotential;
-                                }
-                            }
-                             // Fallback using targetUrl path if m3u8 path didn't yield good name
-                             if (streamName === "Unknown Stream") {
-                                 const targetPathSegments = urlObject.pathname.split('/').filter(Boolean);
-                                 if (targetPathSegments.length > 0) {
-                                     const lastSegment = targetPathSegments[targetPathSegments.length - 1];
-                                     streamName = lastSegment.replace('.php', ''); // Clean up common extensions
-                                 }
-                             }
-
-                        } catch (nameError) {
-                            console.warn(`\x1b[33mCould not reliably determine stream name for ${decodedM3U8}\x1b[0m`);
-                             // Use a fallback based on the original target URL filename
-                             const fallbackName = targetUrl.substring(targetUrl.lastIndexOf('/') + 1).replace('.php', '');
-                             streamName = fallbackName || "Stream";
-                        }
-
-
-                        // Modify m3u8 URL if needed (keep existing logic)
-                        let modifiedM3U8 = decodedM3U8;
-                        if (modifiedM3U8.includes('/index.m3u8')) {
-                              modifiedM3U8 = modifiedM3U8.replace('/index.m3u8', '/tracks-v1a1/mono.m3u8'); // More specific replacement
-                            console.log(`\x1b[33mModified m3u8 URL: ${decodedM3U8} -> ${modifiedM3U8}\x1b[0m`);
-                        } else if (modifiedM3U8.includes('/playlist.m3u8')) {
-                             modifiedM3U8 = modifiedM3U8.replace('/playlist.m3u8', '/tracks-v1a1/mono.m3u8');
-                             console.log(`\x1b[33mModified m3u8 URL: ${decodedM3U8} -> ${modifiedM3U8}\x1b[0m`);
-                        }
-
-
-                        // Store the found link using the modified URL as the key to ensure uniqueness
-                        if (!foundLinks.has(modifiedM3U8)) {
-                             foundLinks.set(modifiedM3U8, { streamName: streamName.toUpperCase(), url: modifiedM3U8, referer: dynamicReferer });
-                             console.log(`\x1b[32mStored unique link: ${streamName.toUpperCase()} - ${modifiedM3U8}\x1b[0m`);
-                        } else {
-                             console.log(`\x1b[33mLink already found: ${modifiedM3U8}\x1b[0m`);
-                        }
-
-                    } else {
-                        console.log(`\x1b[31mCould not find a valid .m3u8 URL on ${targetUrl}\x1b[0m`);
-                       // await page.screenshot({ path: `error_screenshot_m3u8_not_found_${Date.now()}.png` });
+                } catch (playerError) {
+                    if (!pageClosed) { // Check if page might have closed unexpectedly
+                       console.log(`\x1b[31mTimeout or error finding/interacting with player element on ${targetUrl}:\x1b[0m ${playerError.message}`);
+                       // Optional: Screenshot on error
+                       // try { await page.screenshot({ path: `error_screenshot_player_${Date.now()}.png` }); } catch (ssError) {}
                     }
-
-                } catch (scriptError) {
-                    console.log(`\x1b[31mError executing script to find M3U8 on ${targetUrl}:\x1b[0m`, scriptError.message);
-                   // await page.screenshot({ path: `error_screenshot_script_error_${Date.now()}.png` });
                 }
 
-                await delay(2000); // Reduced delay slightly, adjust if needed
+                // Process the found URL (if any)
+                 if (m3u8Url && typeof m3u8Url === 'string' && m3u8Url.includes('.m3u8')) {
+                     console.log(`\x1b[32mFound .m3u8 URL: ${m3u8Url}\x1b[0m`);
 
-            } catch (navigationError) {
-                console.error(`\x1b[31mError processing page ${targetUrl}:\x1b[0m`, navigationError.message);
-               // await page.screenshot({ path: `error_screenshot_nav_error_${Date.now()}.png` });
+                     let streamName = "Unknown Stream";
+                     try {
+                        const urlPath = new URL(m3u8Url).pathname;
+                        const pathSegments = urlPath.split('/').filter(Boolean);
+                         if (pathSegments.length >= 2) {
+                             const potentialName = pathSegments[pathSegments.length - 2];
+                              if (potentialName && isNaN(potentialName) && !['live', 'index', 'chunklist', 'playlist', 'stream', 'hls'].includes(potentialName.toLowerCase())) {
+                                 streamName = potentialName;
+                             } else if (pathSegments.length >= 3) {
+                                 const secondPotential = pathSegments[pathSegments.length - 3];
+                                 if(secondPotential && isNaN(secondPotential) && !['live', 'index', 'chunklist', 'playlist', 'stream', 'hls'].includes(secondPotential.toLowerCase())) streamName = secondPotential;
+                             }
+                         }
+                          if (streamName === "Unknown Stream") {
+                             const targetPathSegments = urlObject.pathname.split('/').filter(Boolean);
+                             if (targetPathSegments.length > 0) {
+                                 const lastSegment = targetPathSegments[targetPathSegments.length - 1];
+                                 streamName = lastSegment.replace(/\.(php|html?)$/i, ''); // Clean up common extensions
+                             }
+                         }
+                     } catch (nameError) {
+                         console.warn(`\x1b[33mCould not reliably determine stream name for ${m3u8Url}. Using fallback.\x1b[0m`);
+                         const fallbackName = targetUrl.substring(targetUrl.lastIndexOf('/') + 1).replace(/\.(php|html?)$/i, '');
+                         streamName = fallbackName || "Stream";
+                     }
+
+
+                     let modifiedM3U8 = m3u8Url;
+                      // Refined modification logic
+                     if (modifiedM3U8.endsWith('/index.m3u8')) {
+                         modifiedM3U8 = modifiedM3U8.replace('/index.m3u8', '/tracks-v1a1/mono.m3u8');
+                         console.log(`\x1b[33mModified m3u8 URL (index): ${m3u8Url} -> ${modifiedM3U8}\x1b[0m`);
+                     } else if (modifiedM3U8.endsWith('/playlist.m3u8')) {
+                          modifiedM3U8 = modifiedM3U8.replace('/playlist.m3u8', '/tracks-v1a1/mono.m3u8');
+                          console.log(`\x1b[33mModified m3u8 URL (playlist): ${m3u8Url} -> ${modifiedM3U8}\x1b[0m`);
+                     }
+
+
+                     if (!foundLinks.has(modifiedM3U8)) {
+                          foundLinks.set(modifiedM3U8, { streamName: streamName.toUpperCase(), url: modifiedM3U8, referer: dynamicReferer });
+                          console.log(`\x1b[32mStored unique link: ${streamName.toUpperCase()} - ${modifiedM3U8} (Referer: ${dynamicReferer})\x1b[0m`);
+                     } else {
+                          console.log(`\x1b[33mLink already found: ${modifiedM3U8}\x1b[0m`);
+                     }
+
+                 } else if (!playerError) { // Only log 'not found' if there wasn't a preceding error finding the player
+                     console.log(`\x1b[31mCould not find a valid .m3u8 URL on ${targetUrl} via evaluation.\x1b[0m`);
+                 }
+
+                await delay(1500); // Slightly reduced delay
+
+            } catch (navigationOrSetupError) {
+                // Catch errors during goto or initial setup before player search
+                if (!pageClosed) { // Check if page might have closed
+                    console.error(`\x1b[31mError processing page ${targetUrl}:\x1b[0m`, navigationOrSetupError.message);
+                     // Optional: Screenshot on error
+                     // try { await page.screenshot({ path: `error_screenshot_nav_${Date.now()}.png` }); } catch (ssError) {}
+                }
             } finally {
-                await page.close();
+                if (!page.isClosed()) {
+                   await page.close();
+                }
+                pageClosed = true; // Mark page as closed
             }
         } // End of for loop
 
         // --- Process and save the found links ---
         if (foundLinks.size > 0) {
-            // Convert Map values to an array
             const parsedLinks = Array.from(foundLinks.values());
-
-            // Sort by stream name
             parsedLinks.sort((a, b) => a.streamName.localeCompare(b.streamName));
 
-            // Generate M3U8 playlist content
             let playlistContent = "#EXTM3U\n";
             parsedLinks.forEach(entry => {
-                // Ensure referer is correctly added for each entry
-                playlistContent += `#EXTINF:-1 tvg-id="${entry.streamName}" tvg-name="${entry.streamName}" group-title="Auto Found",${entry.streamName}\n`; // Added tvg tags
+                playlistContent += `#EXTINF:-1 tvg-id="${entry.streamName}" tvg-name="${entry.streamName}" group-title="Auto Found",${entry.streamName}\n`;
                 playlistContent += `#EXTVLCOPT:http-referrer=${entry.referer}\n`;
-                playlistContent += `#EXTVLCOPT:user-agent=${randomUserAgent}\n`; // Add user-agent too if needed by player/server
+                // --- USE THE CORRECT randomUserAgent VARIABLE (defined outside loop) ---
+                playlistContent += `#EXTVLCOPT:user-agent=${randomUserAgent}\n`;
                 playlistContent += `${entry.url}\n`;
             });
 
@@ -250,7 +265,8 @@ const fs = require('fs');
         }
 
     } catch (error) {
-        console.error("\x1b[31mAn unexpected error occurred during the process:\x1b[0m", error);
+        // Catch top-level errors (e.g., browser launch failed)
+        console.error("\x1b[31mAn unexpected top-level error occurred:\x1b[0m", error);
     } finally {
         if (browser) {
             console.log("\x1b[34mClosing browser...\x1b[0m");
