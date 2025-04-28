@@ -1,4 +1,10 @@
 #EXTM3U
+#EXTINF:-1,
+#EXTVLCOPT:http-referrer=https://foothubhd.online/
+https://pleuro.tremeulonis.xyz/stream.m3u8?request_id=6326
+#EXTINF:-1,0
+#EXTVLCOPT:http-referrer=https://foothubhd.online/
+https://kalis.plirolimenas.xyz/hls/0/stream.m3u8
 #EXTINF:-1,0
 #EXTVLCOPT:http-referrer=https://foothubhd.online/
 https://zolis.plirolimenas.xyz/hls/0/stream.m3u8
@@ -17,9 +23,3 @@ https://yogas.plirolimenas.xyz/hls/0/stream.m3u8
 #EXTINF:-1,0
 #EXTVLCOPT:http-referrer=https://foothubhd.online/
 https://poulis.plirolimenas.xyz/hls/0/stream.m3u8
-#EXTINF:-1,channel1
-#EXTVLCOPT:http-referrer=https://foothubhd.online/
-https://nomis.homintalinis.xyz/channel1/tracks-v1a1/mono.m3u8
-#EXTINF:-1,channel2
-#EXTVLCOPT:http-referrer=https://foothubhd.online/
-https://nomis.homintalinis.xyz/channel2/tracks-v1a1/mono.m3u8
