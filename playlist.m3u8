@@ -1,5 +1,8 @@
 #EXTM3U
 #EXTINF:-1,0
+#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkb.php
+https://lakos.taklarakis.xyz/hls/0/stream.m3u8
+#EXTINF:-1,0
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkc.php
 https://valos.taklarakis.xyz/hls/0/stream.m3u8
 #EXTINF:-1,0
@@ -17,9 +20,6 @@ https://zolas.taklarakis.xyz/hls/0/stream.m3u8
 #EXTINF:-1,0
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkh.php
 https://tolas.taklarakis.xyz/hls/0/stream.m3u8
-#EXTINF:-1,channel1
+#EXTINF:-1,Stream_jp6gx7n4
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linka.php
-https://nomis.homintalinis.xyz/channel1/tracks-v1a1/mono.m3u8
-#EXTINF:-1,channel2
-#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkb.php
-https://nomis.homintalinis.xyz/channel2/tracks-v1a1/mono.m3u8
+https://pleuro.tremeulonis.xyz/stream.m3u8?request_id=7257
