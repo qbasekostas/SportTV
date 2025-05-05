@@ -1,5 +1,11 @@
 #EXTM3U
 #EXTINF:-1,0
+#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkd.php
+https://tonis.taklarakis.xyz/hls/0/stream.m3u8
+#EXTINF:-1,0
+#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linke.php
+https://bolis.taklarakis.xyz/hls/0/stream.m3u8
+#EXTINF:-1,0
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkf.php
 https://rolis.taklarakis.xyz/hls/0/stream.m3u8
 #EXTINF:-1,0
@@ -17,9 +23,3 @@ https://voulis.tropikolenos.xyz/channel2/tracks-v1a1/mono.m3u8
 #EXTINF:-1,channel3
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkc.php
 https://voulis.tropikolenos.xyz/channel3/tracks-v1a1/mono.m3u8
-#EXTINF:-1,channel4
-#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkd.php
-https://voulis.tropikolenos.xyz/channel4/tracks-v1a1/mono.m3u8
-#EXTINF:-1,channel5
-#EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linke.php
-https://voulis.tropikolenos.xyz/channel5/tracks-v1a1/mono.m3u8
