@@ -19,7 +19,7 @@ https://tolas.taklarakis.xyz/hls/0/stream.m3u8
 https://palis.nomimenos.xyz/channel1/tracks-v1a1/mono.m3u8
 #EXTINF:-1,channel2
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkb.php
-https://palis.nomimenos.xyz/channel2/tracks-v1a1/mono.m3u8
+https://voulis.tropikolenos.xyz/channel2/tracks-v1a1/mono.m3u8
 #EXTINF:-1,channel3
 #EXTVLCOPT:http-referrer=https://foothubhd.online/cdn3/linkc.php
 https://voulis.tropikolenos.xyz/channel3/tracks-v1a1/mono.m3u8
