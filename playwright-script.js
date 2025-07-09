@@ -104,12 +104,13 @@ const fs = require('fs');
         }
 
         // Sort and save the m3u8 urls
-        const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName));
-        let playlistContent = "#EXTM3U\n";
-        parsedLinks.forEach(entry => {
-            playlistContent += `#EXTINF:-1,${entry.streamName}\n#EXTVLCOPT:http-referrer=${entry.referer}\n${entry.url}\n`;
-        });
-        fs.writeFileSync('playlist.m3u8', playlistContent);
+const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName));
+let playlistContent = "#EXTM3U\n";
+parsedLinks.forEach(entry => {
+    // Εδώ είναι η αλλαγή: Συνδυάζουμε το URL με το Referer
+    playlistContent += `#EXTINF:-1,${entry.streamName}\n${entry.url}#Referer=${entry.referer}\n`;
+});
+fs.writeFileSync('playlist.m3u8', playlistContent);
 
         if (parsedLinks.length) {
             console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
