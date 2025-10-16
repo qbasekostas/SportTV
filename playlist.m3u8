@@ -5,6 +5,8 @@ https://yolis.corpgrtpleu.xyz/channel1/tracks-v1a1/mono.m3u8#Referer=https://foo
 https://yolis.corpgrtpleu.xyz/channel2/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linkb.php
 #EXTINF:-1,channel3
 https://yolis.corpgrtpleu.xyz/channel3/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linkc.php
+#EXTINF:-1,channel4
+https://yolis.corpgrtpleu.xyz/channel4/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linkd.php
 #EXTINF:-1,channel5
 https://yolis.corpgrtpleu.xyz/channel5/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linke.php
 #EXTINF:-1,channel6
