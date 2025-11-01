@@ -83,7 +83,7 @@ const fs = require('fs');
                 }
 
                 // Extract the stream name from URL path or generate random name
-                let streamName = new URL(decodedM3U8).pathname.split('/').slice(-2, -1)[0];
+                let streamName = new URL(decodedM3U8).pathname.split('/')[1];
                 if (!streamName || streamName.trim() === '') {
                     streamName = `Stream_${Math.random().toString(36).substring(2, 10)}`;
                     console.log("\x1b[33mGenerated random stream name:\x1b[0m", streamName);
