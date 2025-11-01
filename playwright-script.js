@@ -13,9 +13,9 @@ const fs = require('fs');
         'https://foothubhd.online/cdn3/linkh.php',
         'https://foothubhd.online/cdn3/linki.php',
         'https://foothubhd.online/greekchannels/sportal1.php',
-        'https://foothubhd.online/greekchannels/sportal1.php',
-        'https://foothubhd.online/greekchannels/sportal1.php',
-        'https://foothubhd.online/greekchannels/sportal1.php'
+        'https://foothubhd.online/greekchannels/sportal2.php',
+        'https://foothubhd.online/greekchannels/sportal3.php',
+        'https://foothubhd.online/greekchannels/sportal4.php'
     ];
 
     const m3u8Links = new Set();
