@@ -1,4 +1,6 @@
 #EXTM3U
+#EXTINF:-1,ant1f1
+https://trevlidakis.tintevlanis.xyz/ant1f1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/streams/f1.php
 #EXTINF:-1,channel1
 https://trevlidakis.tintevlanis.xyz/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linka.php
 #EXTINF:-1,channel2
@@ -17,11 +19,3 @@ https://trevlidakis.tintevlanis.xyz/channel7/tracks-v1a1/mono.m3u8#Referer=https
 https://trevlidakis.tintevlanis.xyz/channel8/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linkh.php
 #EXTINF:-1,channel9
 https://trevlidakis.tintevlanis.xyz/channel9/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linki.php
-#EXTINF:-1,service1
-https://telmaco-cdn.akamaized.net/service1/default/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/greekchannels/sportal1.php
-#EXTINF:-1,service2
-https://telmaco-cdn.akamaized.net/service2/default/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/greekchannels/sportal2.php
-#EXTINF:-1,service3
-https://telmaco-cdn.akamaized.net/service3/default/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/greekchannels/sportal3.php
-#EXTINF:-1,service4
-https://telmaco-cdn.akamaized.net/service4/default/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/greekchannels/sportal4.php
