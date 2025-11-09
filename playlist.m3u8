@@ -1,8 +1,6 @@
 #EXTM3U
 #EXTINF:-1,ant1f1
 https://krenteliskil.b-cdn.net/ant1f1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/streams/f1.php
-#EXTINF:-1,channel1
-https://holis.tintevlanis.xyz/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linka.php
 #EXTINF:-1,channel2
 https://holis.tintevlanis.xyz/channel2/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.online/cdn3/linkb.php
 #EXTINF:-1,channel3
