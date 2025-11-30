@@ -1,4 +1,6 @@
 #EXTM3U
+#EXTINF:-1,ant1f1
+https://hiklentoumis.global.ssl.fastly.net/ant1f1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/streams/f1.php
 #EXTINF:-1,channel1
 https://homontekilistopis.b-cdn.net/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/cdn3/linka.php
 #EXTINF:-1,channel2
@@ -17,5 +19,3 @@ https://homontekilistopis.b-cdn.net/channel7/tracks-v1a1/mono.m3u8#Referer=https
 https://homontekilistopis.b-cdn.net/channel8/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/cdn3/linkh.php
 #EXTINF:-1,channel9
 https://homontekilistopis.b-cdn.net/channel9/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/cdn3/linki.php
-#EXTINF:-1,Stream_3j020io8
-##Referer=https://foothubhd.info/streams/f1.php
