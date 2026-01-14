@@ -1,8 +1,6 @@
 #EXTM3U
 #EXTINF:-1,831bc069aaeb45a4a5a03883e3890c8a
 https://lcdn.antennaplus.gr/831bc069aaeb45a4a5a03883e3890c8a/eu-central-1/6415884360001/playlist_wv_dvr.m3u8#Referer=https://foothubhd.info/streams/f1.php
-#EXTINF:-1,channel1
-https://rizglokokis.b-cdn.net/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/cdn3/linka.php
 #EXTINF:-1,channel2
 https://rizglokokis.b-cdn.net/channel2/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.info/cdn3/linkb.php
 #EXTINF:-1,channel3
