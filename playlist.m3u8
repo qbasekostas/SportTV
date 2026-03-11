@@ -3,6 +3,8 @@
 https://lcdn.antennaplus.gr/831bc069aaeb45a4a5a03883e3890c8a/eu-central-1/6415884360001/playlist_wv_dvr.m3u8#Referer=https://foothubhd.info/streams/f1.php
 #EXTINF:-1,channel1
 https://koklantoplinis.b-cdn.net/channel1/index.m3u8#Referer=https://foothubhd.info/cdn3/linka.php
+#EXTINF:-1,channel2
+https://koklantoplinis.b-cdn.net/channel2/index.m3u8#Referer=https://foothubhd.info/cdn3/linkb.php
 #EXTINF:-1,channel3
 https://koklantoplinis.b-cdn.net/channel3/index.m3u8#Referer=https://foothubhd.info/cdn3/linkc.php
 #EXTINF:-1,channel4
@@ -15,5 +17,3 @@ https://koklantoplinis.b-cdn.net/channel6/index.m3u8#Referer=https://foothubhd.i
 https://koklantoplinis.b-cdn.net/channel7/index.m3u8#Referer=https://foothubhd.info/cdn3/linkg.php
 #EXTINF:-1,channel8
 https://koklantoplinis.b-cdn.net/channel8/index.m3u8#Referer=https://foothubhd.info/cdn3/linkh.php
-#EXTINF:-1,channel9
-https://koklantoplinis.b-cdn.net/channel9/index.m3u8#Referer=https://foothubhd.info/cdn3/linki.php
