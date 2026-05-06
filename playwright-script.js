@@ -4,6 +4,8 @@ const fs = require('fs');
 (async () => {
     const targetUrls = [
         'https://foothubhd.info/cdn3/linka.php',
+        'https://foothubhd.info/cdn3/linkab.php',
+        'https://foothubhd.info/cdn3/linkbb.php',
         'https://foothubhd.info/cdn3/linkb.php',
         'https://foothubhd.info/cdn3/linkc.php',
         'https://foothubhd.info/cdn3/linkd.php',
