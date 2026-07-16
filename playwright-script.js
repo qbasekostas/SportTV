@@ -3,18 +3,18 @@ const fs = require('fs');
 
 (async () => {
     const targetUrls = [
-        'https://foothubhd.info/cdn3/linka.php',
-        'https://foothubhd.info/cdn3/linkab.php',
-        'https://foothubhd.info/cdn3/linkbb.php',
-        'https://foothubhd.info/cdn3/linkb.php',
-        'https://foothubhd.info/cdn3/linkc.php',
-        'https://foothubhd.info/cdn3/linkd.php',
-        'https://foothubhd.info/cdn3/linke.php',
-        'https://foothubhd.info/cdn3/linkf.php',
-        'https://foothubhd.info/cdn3/linkg.php',
-        'https://foothubhd.info/cdn3/linkh.php',
-        'https://foothubhd.info/cdn3/linki.php',
-        'https://foothubhd.info/streams/f1.php'
+        'https://foothubhd.st/cdn3/linka.php',
+        'https://foothubhd.st/cdn3/linkab.php',
+        'https://foothubhd.st/cdn3/linkbb.php',
+        'https://foothubhd.st/cdn3/linkb.php',
+        'https://foothubhd.st/cdn3/linkc.php',
+        'https://foothubhd.st/cdn3/linkd.php',
+        'https://foothubhd.st/cdn3/linke.php',
+        'https://foothubhd.st/cdn3/linkf.php',
+        'https://foothubhd.st/cdn3/linkg.php',
+        'https://foothubhd.st/cdn3/linkh.php',
+        'https://foothubhd.st/cdn3/linki.php',
+        'https://foothubhd.st/streams/f1.php'
     ];
 
     const m3u8Links = new Set();
