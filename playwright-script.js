@@ -4,8 +4,6 @@ const fs = require('fs');
 (async () => {
     const targetUrls = [
         'https://foothubhd.st/cdn3/linka.php',
-        'https://foothubhd.st/cdn3/linkab.php',
-        'https://foothubhd.st/cdn3/linkbb.php',
         'https://foothubhd.st/cdn3/linkb.php',
         'https://foothubhd.st/cdn3/linkc.php',
         'https://foothubhd.st/cdn3/linkd.php',
@@ -20,7 +18,6 @@ const fs = require('fs');
     const m3u8Links = new Set();
     let browser;
     const delay = ms => new Promise(res => setTimeout(res, ms));
-    const CLAPPR_TIMEOUT = 20000;
 
     try {
         console.log("\x1b[34mStarting Playwright with Firefox...\x1b[0m");
@@ -37,93 +34,69 @@ const fs = require('fs');
                 'Connection': 'keep-alive',
             });
 
-            page.on('pageerror', (err) => {
-                console.log("\x1b[31m Javascript error:\x1b[0m", err.message, err.stack, targetUrl)
-            });
-
             try {
                 console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
-                const start = Date.now();
-                const response = await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
-                console.log("\x1b[33m Page loaded with status:\x1b[0m", response.status(), targetUrl, ` in ${Date.now() - start}ms`);
+                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
 
-                const referer = response.url();
-                console.log("\x1b[32mReferer detected:\x1b[0m", referer);
+                // Ορίζουμε το Referer που ζήτησες
+                const fixedReferer = "https://foothubhd.st/";
 
-                // ====================== START OF CHANGES ======================
-                
                 let decodedM3U8;
-                try {
-                    // Παίρνουμε όλο το HTML της σελίδας
-                    const pageContent = await page.content();
-                    
-                    // Ψάχνουμε για το pattern "window.atob('...')" για να βρούμε το Base64 URL
-                    const base64Regex = /window\.atob\('([^']+)'\)/;
-                    const match = pageContent.match(base64Regex);
-
-                    if (match && match[1]) {
-                        const base64Url = match[1];
-                        // Αποκωδικοποιούμε το Base64 URL χρησιμοποιώντας τη Buffer του Node.js
-                        decodedM3U8 = Buffer.from(base64Url, 'base64').toString('utf-8');
-                        console.log(`\x1b[32mFound and decoded .m3u8 URL: ${decodedM3U8}\x1b[0m`);
-                    } else {
-                        // Αν δεν βρεθεί, πετάμε σφάλμα για να πάει στο catch block
-                        throw new Error('Could not find Base64 encoded M3U8 URL in page content.');
-                    }
-
-                } catch (scriptError) {
-                    console.log("\x1b[31mERROR: Could not get the M3U8 url from the page content:\x1b[0m", scriptError.message, targetUrl);
-                    await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
-                    continue; // Προχωράμε στο επόμενο URL
-                }
+                const pageContent = await page.content();
                 
-                // ======================= END OF CHANGES =======================
+                // Εύρεση Base64
+                const base64Regex = /window\.atob\('([^']+)'\)/;
+                const match = pageContent.match(base64Regex);
 
-                // Η υπόλοιπη λογική παραμένει ίδια
+                if (match && match[1]) {
+                    decodedM3U8 = Buffer.from(match[1], 'base64').toString('utf-8');
+                    console.log(`\x1b[32mFound URL: ${decodedM3U8}\x1b[0m`);
+                } else {
+                    console.log(`\x1b[31mNo Base64 found for: ${targetUrl}\x1b[0m`);
+                    await page.close();
+                    continue;
+                }
+
+                // --- ΛΟΓΙΚΗ ΟΝΟΜΑΤΟΔΟΣΙΑΣ ---
                 let streamName;
-                try {
-                    streamName = new URL(decodedM3U8).pathname.split('/')[1];
-                } catch(e) {
-                    // Fallback in case of invalid URL
-                    streamName = `Stream_${Math.random().toString(36).substring(2, 10)}`;
-                }
                 
-                if (!streamName || streamName.trim() === '') {
-                    streamName = `Stream_${Math.random().toString(36).substring(2, 10)}`;
-                    console.log("\x1b[33mGenerated random stream name:\x1b[0m", streamName);
+                // 1. Ψάχνουμε αν το URL περιέχει "channel" + αριθμό (π.χ. channel1)
+                const channelMatch = decodedM3U8.match(/(channel\d+)/i);
+                
+                if (channelMatch) {
+                    streamName = channelMatch[1].toLowerCase(); // π.χ. channel1
+                } else if (targetUrl.includes('f1.php')) {
+                    streamName = 'channel_f1'; // Ειδική ονομασία για το f1
+                } else {
+                    // Αν δεν βρει τίποτα, παίρνει το τελευταίο κομμάτι του targetUrl για να ξέρουμε ποιο είναι
+                    streamName = targetUrl.split('/').pop().replace('.php', '');
                 }
 
-                m3u8Links.add({ streamName, url: decodedM3U8, referer });
+                m3u8Links.add({ streamName, url: decodedM3U8, referer: fixedReferer });
 
-                await delay(1000); // Μείωσα λίγο την καθυστέρηση
+                await delay(500);
 
             } catch (navigationError) {
-                console.error("\x1b[31mError processing page:\x1b[0m", navigationError, targetUrl);
-                await page.screenshot({ path: `error_screenshot_${Date.now()}.png` });
+                console.error("\x1b[31mError processing page:\x1b[0m", targetUrl);
             } finally {
                 await page.close();
             }
         }
 
-        const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName));
+        // Ταξινόμηση και αποθήκευση
+        const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
+        
         let playlistContent = "#EXTM3U\n";
         parsedLinks.forEach(entry => {
-            // Προσθέτουμε το Referer στο τέλος, όπως το είχατε
             playlistContent += `#EXTINF:-1,${entry.streamName}\n${entry.url}#Referer=${entry.referer}\n`;
         });
+        
         fs.writeFileSync('playlist.m3u8', playlistContent);
-
-        if (parsedLinks.length) {
-            console.log(`\x1b[32m✅ Total .m3u8 URLs found: ${parsedLinks.length}\x1b[0m`);
-        } else {
-            console.log("\x1b[33m⚠️ No .m3u8 URL found.\x1b[0m");
-        }
+        console.log(`\x1b[32m✅ Playlist created with ${parsedLinks.length} links.\x1b[0m`);
 
     } catch (error) {
         console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
     } finally {
-        if (browser) {
-            await browser.close();
-        }
+        if (browser) await browser.close();
     }
 })();
