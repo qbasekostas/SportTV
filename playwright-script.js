@@ -27,14 +27,14 @@ const fs = require('fs');
             const page = await browser.newPage();
             let foundData = null;
 
-            // --- NETWORK INTERCEPTION: Ακούμε τα αιτήματα του browser ---
+            // --- NETWORK INTERCEPTION: Ψάχνει τον σωστό Referer ---
             await page.route('**/*.m3u8*', async (route) => {
                 const request = route.request();
                 const url = request.url();
                 const headers = request.headers();
                 
-                // Φιλτράρουμε να μην είναι διαφήμιση και να έχει referer
-                if (!foundData && url.includes('.m3u8') && headers['referer']) {
+                // ΕΔΩ ΕΙΝΑΙ ΤΟ SEARCH: Αγνοούμε το foothubhd για να βρει τον πραγματικό referer
+                if (url.includes('.m3u8') && headers['referer'] && !headers['referer'].includes('foothubhd.st')) {
                     foundData = {
                         url: url,
                         referer: headers['referer']
@@ -49,18 +49,16 @@ const fs = require('fs');
                 console.log("\x1b[34mLoading:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'load', timeout: 30000 });
                 
-                // Περιμένουμε λίγο να ξεκινήσει ο παίκτης να ζητάει το m3u8
                 await delay(4000);
 
                 if (foundData) {
                     let finalUrl = foundData.url;
                     
-                    // ΔΙΟΡΘΩΣΗ: Αν είναι index.m3u8 το κάνουμε tracks-v1a1/mono.m3u8
+                    // ΑΥΣΤΗΡΑ tracks-v1a1/mono.m3u8
                     if (finalUrl.includes('index.m3u8')) {
                         finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
 
-                    // ΟΝΟΜΑΤΟΣΙΑ (channel1, channel2 κλπ)
                     let streamName;
                     const channelMatch = finalUrl.match(/channel(\d+)/i);
                     if (channelMatch) {
@@ -68,7 +66,6 @@ const fs = require('fs');
                     } else if (targetUrl.includes('f1.php')) {
                         streamName = 'channel_f1';
                     } else {
-                        // Fallback από το όνομα του αρχείου αν δεν υπάρχει "channel" στο URL
                         streamName = targetUrl.split('/').pop().replace('.php', '').replace('link', 'channel_');
                     }
 
@@ -88,7 +85,6 @@ const fs = require('fs');
             }
         }
 
-        // Ταξινόμηση και εγγραφή
         const sortedLinks = m3u8Links.sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
         let playlist = "#EXTM3U\n";
         sortedLinks.forEach(item => {
