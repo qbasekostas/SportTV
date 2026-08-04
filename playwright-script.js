@@ -55,7 +55,7 @@ const fs = require('fs');
                 if (foundData) {
                     let finalUrl = foundData.url;
                     
-                    // ΔΙΟΡΘΩΣΗ: Αν είναι index.m3u8 το κάνουμε mono.m3u8
+                    // ΑΥΣΤΗΡΑ ΜΟΝΟ ΑΥΤΗ Η ΑΛΛΑΓΗ
                     if (finalUrl.includes('index.m3u8')) {
                         finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
