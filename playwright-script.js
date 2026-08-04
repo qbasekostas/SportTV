@@ -57,7 +57,7 @@ const fs = require('fs');
                     
                     // ΔΙΟΡΘΩΣΗ: Αν είναι index.m3u8 το κάνουμε mono.m3u8
                     if (finalUrl.includes('index.m3u8')) {
-                        finalUrl = finalUrl.replace('index.m3u8', 'mono.m3u8');
+                        finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
 
                     // ΟΝΟΜΑΤΟΣΙΑ (channel1, channel2 κλπ)
