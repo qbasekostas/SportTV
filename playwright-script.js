@@ -27,14 +27,14 @@ const fs = require('fs');
             const page = await browser.newPage();
             let foundData = null;
 
-            // --- NETWORK INTERCEPTION: Ακούμε τα αιτήματα του browser ---
+            // --- NETWORK INTERCEPTION: Ψάχνει για το σωστό Referer ---
             await page.route('**/*.m3u8*', async (route) => {
                 const request = route.request();
                 const url = request.url();
                 const headers = request.headers();
                 
-                // Φιλτράρουμε να μην είναι διαφήμιση και να έχει referer
-                if (!foundData && url.includes('.m3u8') && headers['referer']) {
+                // Φιλτράρουμε ώστε να βρει τον Referer που ΔΕΝ είναι η αρχική σελίδα (foothubhd)
+                if (url.includes('.m3u8') && headers['referer'] && !headers['referer'].includes('foothubhd.st')) {
                     foundData = {
                         url: url,
                         referer: headers['referer']
@@ -49,13 +49,13 @@ const fs = require('fs');
                 console.log("\x1b[34mLoading:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'load', timeout: 30000 });
                 
-                // Περιμένουμε λίγο να ξεκινήσει ο παίκτης να ζητάει το m3u8
-                await delay(4000);
+                // Περιμένουμε για να προλάβει ο παίκτης να στείλει το αίτημα
+                await delay(5000);
 
                 if (foundData) {
                     let finalUrl = foundData.url;
                     
-                    // ΑΥΣΤΗΡΑ ΜΟΝΟ ΑΥΤΗ Η ΑΛΛΑΓΗ
+                    // ΑΥΣΤΗΡΑ ΑΛΛΑΓΗ ΣΕ tracks-v1a1/mono.m3u8
                     if (finalUrl.includes('index.m3u8')) {
                         finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
@@ -68,7 +68,6 @@ const fs = require('fs');
                     } else if (targetUrl.includes('f1.php')) {
                         streamName = 'channel_f1';
                     } else {
-                        // Fallback από το όνομα του αρχείου αν δεν υπάρχει "channel" στο URL
                         streamName = targetUrl.split('/').pop().replace('.php', '').replace('link', 'channel_');
                     }
 
