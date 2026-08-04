@@ -26,64 +26,57 @@ const fs = require('fs');
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
 
-            const randomUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
             await page.setExtraHTTPHeaders({
-                'User-Agent': randomUserAgent,
-                'Accept': '*/*',
-                'Accept-Language': 'el-GR,el;q=0.8,en-US;q=0.5,en;q=0.3',
-                'Connection': 'keep-alive',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             });
 
             try {
-                console.log("\x1b[34mFetching page content:\x1b[0m", targetUrl);
-                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 15000 });
+                console.log("\x1b[34mFetching page:\x1b[0m", targetUrl);
+                // Πηγαίνουμε στη σελίδα και περιμένουμε να φορτώσει
+                await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
-                // Ορίζουμε το Referer που ζήτησες
-                const fixedReferer = "https://foothubhd.st/";
+                // --- ΕΔΩ ΨΑΧΝΕΙ ΤΟΝ REFERER ΔΥΝΑΜΙΚΑ ---
+                // Παίρνει το domain της σελίδας που είναι ανοιχτή εκείνη τη στιγμή (μετά από redirects)
+                const dynamicReferer = new URL(page.url()).origin + "/";
+                console.log(`\x1b[36mFound Referer: ${dynamicReferer}\x1b[0m`);
 
-                let decodedM3U8;
                 const pageContent = await page.content();
-                
-                // Εύρεση Base64
                 const base64Regex = /window\.atob\('([^']+)'\)/;
                 const match = pageContent.match(base64Regex);
 
                 if (match && match[1]) {
-                    decodedM3U8 = Buffer.from(match[1], 'base64').toString('utf-8');
-                    console.log(`\x1b[32mFound URL: ${decodedM3U8}\x1b[0m`);
+                    const decodedM3U8 = Buffer.from(match[1], 'base64').toString('utf-8');
+                    
+                    // --- ΟΝΟΜΑΤΟΣΙΑ (channel1, channel2 κλπ) ---
+                    let streamName;
+                    const channelMatch = decodedM3U8.match(/channel(\d+)/i);
+                    
+                    if (channelMatch) {
+                        streamName = `channel${channelMatch[1]}`;
+                    } else if (targetUrl.includes('f1.php')) {
+                        streamName = 'channel_f1';
+                    } else {
+                        // Αν δεν βρει "channelX" στο link, παίρνει το όνομα από το targetUrl
+                        streamName = targetUrl.split('/').pop().replace('.php', '').replace('link', 'channel_');
+                    }
+
+                    console.log(`\x1b[32mAdded: ${streamName}\x1b[0m`);
+                    m3u8Links.add({ streamName, url: decodedM3U8, referer: dynamicReferer });
+
                 } else {
                     console.log(`\x1b[31mNo Base64 found for: ${targetUrl}\x1b[0m`);
-                    await page.close();
-                    continue;
                 }
-
-                // --- ΛΟΓΙΚΗ ΟΝΟΜΑΤΟΔΟΣΙΑΣ ---
-                let streamName;
-                
-                // 1. Ψάχνουμε αν το URL περιέχει "channel" + αριθμό (π.χ. channel1)
-                const channelMatch = decodedM3U8.match(/(channel\d+)/i);
-                
-                if (channelMatch) {
-                    streamName = channelMatch[1].toLowerCase(); // π.χ. channel1
-                } else if (targetUrl.includes('f1.php')) {
-                    streamName = 'channel_f1'; // Ειδική ονομασία για το f1
-                } else {
-                    // Αν δεν βρει τίποτα, παίρνει το τελευταίο κομμάτι του targetUrl για να ξέρουμε ποιο είναι
-                    streamName = targetUrl.split('/').pop().replace('.php', '');
-                }
-
-                m3u8Links.add({ streamName, url: decodedM3U8, referer: fixedReferer });
 
                 await delay(500);
 
             } catch (navigationError) {
-                console.error("\x1b[31mError processing page:\x1b[0m", targetUrl);
+                console.error("\x1b[31mError processing:\x1b[0m", targetUrl);
             } finally {
                 await page.close();
             }
         }
 
-        // Ταξινόμηση και αποθήκευση
+        // Ταξινόμηση αριθμητικά (1, 2, 3...)
         const parsedLinks = Array.from(m3u8Links).sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
         
         let playlistContent = "#EXTM3U\n";
@@ -92,7 +85,7 @@ const fs = require('fs');
         });
         
         fs.writeFileSync('playlist.m3u8', playlistContent);
-        console.log(`\x1b[32m✅ Playlist created with ${parsedLinks.length} links.\x1b[0m`);
+        console.log(`\x1b[32m✅ Playlist created with dynamic referers.\x1b[0m`);
 
     } catch (error) {
         console.error("\x1b[31mAn unexpected error occurred:\x1b[0m", error);
