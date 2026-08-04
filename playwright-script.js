@@ -26,22 +26,21 @@ const fs = require('fs');
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
             let foundData = null;
-            
-            // Παίρνουμε το domain της σελίδας (π.χ. foothubhd.st) για να το αγνοήσουμε στο search
-            const mainDomain = new URL(targetUrl).hostname;
 
-            // --- NETWORK INTERCEPTION: Δυναμικό Search ---
+            // --- NETWORK INTERCEPTION: Ακούμε τα αιτήματα του browser ---
             await page.route('**/*.m3u8*', async (route) => {
                 const request = route.request();
                 const url = request.url();
                 const headers = request.headers();
                 
-                // ΨΑΧΝΕΙ οποιοδήποτε referer ΔΕΝ περιέχει το αρχικό domain
-                if (url.includes('.m3u8') && headers['referer'] && !headers['referer'].includes(mainDomain)) {
+                // Φιλτράρουμε να μην είναι διαφήμιση και να έχει referer
+                if (!foundData && url.includes('.m3u8') && headers['referer']) {
                     foundData = {
                         url: url,
                         referer: headers['referer']
                     };
+                    console.log(`\x1b[32m[MATCH] URL: ${url.substring(0, 60)}...\x1b[0m`);
+                    console.log(`\x1b[32m[MATCH] Referer: ${headers['referer']}\x1b[0m`);
                 }
                 route.continue();
             });
@@ -50,16 +49,18 @@ const fs = require('fs');
                 console.log("\x1b[34mLoading:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'load', timeout: 30000 });
                 
-                await delay(5000); // Περιμένουμε λίγο παραπάνω για το search
+                // Περιμένουμε λίγο να ξεκινήσει ο παίκτης να ζητάει το m3u8
+                await delay(4000);
 
                 if (foundData) {
                     let finalUrl = foundData.url;
                     
-                    // ΑΥΣΤΗΡΑ tracks-v1a1/mono.m3u8
+                    // ΔΙΟΡΘΩΣΗ: Αν είναι index.m3u8 το κάνουμε tracks-v1a1/mono.m3u8
                     if (finalUrl.includes('index.m3u8')) {
                         finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
 
+                    // ΟΝΟΜΑΤΟΣΙΑ (channel1, channel2 κλπ)
                     let streamName;
                     const channelMatch = finalUrl.match(/channel(\d+)/i);
                     if (channelMatch) {
@@ -67,6 +68,7 @@ const fs = require('fs');
                     } else if (targetUrl.includes('f1.php')) {
                         streamName = 'channel_f1';
                     } else {
+                        // Fallback από το όνομα του αρχείου αν δεν υπάρχει "channel" στο URL
                         streamName = targetUrl.split('/').pop().replace('.php', '').replace('link', 'channel_');
                     }
 
@@ -75,7 +77,6 @@ const fs = require('fs');
                         url: finalUrl, 
                         referer: foundData.referer 
                     });
-                    console.log(`\x1b[32m✅ Found Referer: ${foundData.referer}\x1b[0m`);
                 } else {
                     console.log(`\x1b[31m❌ Could not catch .m3u8 request for: ${targetUrl}\x1b[0m`);
                 }
@@ -87,6 +88,7 @@ const fs = require('fs');
             }
         }
 
+        // Ταξινόμηση και εγγραφή
         const sortedLinks = m3u8Links.sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
         let playlist = "#EXTM3U\n";
         sortedLinks.forEach(item => {
@@ -94,7 +96,7 @@ const fs = require('fs');
         });
 
         fs.writeFileSync('playlist.m3u8', playlist);
-        console.log(`\x1b[32m✅ Done! Playlist created with dynamic search logic.\x1b[0m`);
+        console.log(`\x1b[32m✅ Done! Playlist saved with ${sortedLinks.length} links.\x1b[0m`);
 
     } catch (error) {
         console.error("Fatal error:", error);
