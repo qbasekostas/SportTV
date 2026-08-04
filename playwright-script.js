@@ -1,4 +1,4 @@
-const { firefox } = require('playwright');
+const { chromium, firefox } = require('playwright');
 const fs = require('fs');
 
 (async () => {
@@ -20,44 +20,48 @@ const fs = require('fs');
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
     try {
-        console.log("\x1b[34mStarting Playwright (Frame Search Mode)...\x1b[0m");
+        console.log("\x1b[34mStarting Playwright (Network Interceptor mode)...\x1b[0m");
         browser = await firefox.launch({ headless: true, args: ['--no-sandbox'] });
 
         for (const targetUrl of targetUrls) {
             const page = await browser.newPage();
+            let foundData = null;
+            
+            // Παίρνουμε το domain της σελίδας (π.χ. foothubhd.st) για να το αγνοήσουμε στο search
+            const mainDomain = new URL(targetUrl).hostname;
+
+            // --- NETWORK INTERCEPTION: Δυναμικό Search ---
+            await page.route('**/*.m3u8*', async (route) => {
+                const request = route.request();
+                const url = request.url();
+                const headers = request.headers();
+                
+                // ΨΑΧΝΕΙ οποιοδήποτε referer ΔΕΝ περιέχει το αρχικό domain
+                if (url.includes('.m3u8') && headers['referer'] && !headers['referer'].includes(mainDomain)) {
+                    foundData = {
+                        url: url,
+                        referer: headers['referer']
+                    };
+                }
+                route.continue();
+            });
+
             try {
                 console.log("\x1b[34mLoading:\x1b[0m", targetUrl);
-                // Περιμένουμε networkidle για να φορτώσουν όλα τα εσωτερικά frames
-                await page.goto(targetUrl, { waitUntil: 'networkidle', timeout: 30000 });
+                await page.goto(targetUrl, { waitUntil: 'load', timeout: 30000 });
+                
+                await delay(5000); // Περιμένουμε λίγο παραπάνω για το search
 
-                let decodedM3U8 = null;
-                let foundReferer = null;
-
-                // ΣΑΡΩΣΗ ΟΛΩΝ ΤΩΝ FRAMES ΓΙΑ ΤΟ ΣΩΣΤΟ REFERER ΚΑΙ ΤΟ LINK
-                const allFrames = page.frames();
-                for (const frame of allFrames) {
-                    try {
-                        const content = await frame.content();
-                        const match = content.match(/window\.atob\('([^']+)'\)/);
-                        
-                        if (match && match[1]) {
-                            decodedM3U8 = Buffer.from(match[1], 'base64').toString('utf-8');
-                            // Εδώ βρίσκει το σωστό Referer (π.χ. https://hamis.romponalis.st/)
-                            foundReferer = new URL(frame.url()).origin + "/";
-                            break; 
-                        }
-                    } catch (e) {}
-                }
-
-                if (decodedM3U8) {
+                if (foundData) {
+                    let finalUrl = foundData.url;
+                    
                     // ΑΥΣΤΗΡΑ tracks-v1a1/mono.m3u8
-                    if (decodedM3U8.includes('index.m3u8')) {
-                        decodedM3U8 = decodedM3U8.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
+                    if (finalUrl.includes('index.m3u8')) {
+                        finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
 
-                    // ΟΝΟΜΑΤΟΣΙΑ (channel1, channel2 κλπ)
                     let streamName;
-                    const channelMatch = decodedM3U8.match(/channel(\d+)/i);
+                    const channelMatch = finalUrl.match(/channel(\d+)/i);
                     if (channelMatch) {
                         streamName = `channel${channelMatch[1]}`;
                     } else if (targetUrl.includes('f1.php')) {
@@ -66,10 +70,14 @@ const fs = require('fs');
                         streamName = targetUrl.split('/').pop().replace('.php', '').replace('link', 'channel_');
                     }
 
-                    console.log(`\x1b[32m✅ Found: ${streamName} | Ref: ${foundReferer}\x1b[0m`);
-                    m3u8Links.push({ streamName, url: decodedM3U8, referer: foundReferer });
+                    m3u8Links.push({ 
+                        streamName, 
+                        url: finalUrl, 
+                        referer: foundData.referer 
+                    });
+                    console.log(`\x1b[32m✅ Found Referer: ${foundData.referer}\x1b[0m`);
                 } else {
-                    console.log(`\x1b[31m❌ No link found for: ${targetUrl}\x1b[0m`);
+                    console.log(`\x1b[31m❌ Could not catch .m3u8 request for: ${targetUrl}\x1b[0m`);
                 }
 
             } catch (err) {
@@ -79,7 +87,6 @@ const fs = require('fs');
             }
         }
 
-        // Ταξινόμηση και εγγραφή
         const sortedLinks = m3u8Links.sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
         let playlist = "#EXTM3U\n";
         sortedLinks.forEach(item => {
@@ -87,7 +94,7 @@ const fs = require('fs');
         });
 
         fs.writeFileSync('playlist.m3u8', playlist);
-        console.log(`\x1b[32m✅ Done! Playlist saved with ${sortedLinks.length} links.\x1b[0m`);
+        console.log(`\x1b[32m✅ Done! Playlist created with dynamic search logic.\x1b[0m`);
 
     } catch (error) {
         console.error("Fatal error:", error);
