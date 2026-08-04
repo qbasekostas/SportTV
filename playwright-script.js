@@ -1,4 +1,4 @@
-const { chromium, firefox } = require('playwright');
+const { firefox } = require('playwright');
 const fs = require('fs');
 
 (async () => {
@@ -21,26 +21,27 @@ const fs = require('fs');
 
     try {
         console.log("\x1b[34mStarting Playwright (Network Interceptor mode)...\x1b[0m");
+        // Χρησιμοποιούμε Firefox γιατί συνήθως περνάει πιο εύκολα τα bot detections
         browser = await firefox.launch({ headless: true, args: ['--no-sandbox'] });
 
         for (const targetUrl of targetUrls) {
-            const page = await browser.newPage();
+            const context = await browser.newContext();
+            const page = await context.newPage();
             let foundData = null;
 
-            // --- NETWORK INTERCEPTION: Ψάχνει τον σωστό Referer ---
+            // --- NETWORK INTERCEPTION ---
             await page.route('**/*.m3u8*', async (route) => {
                 const request = route.request();
                 const url = request.url();
                 const headers = request.headers();
                 
-                // ΕΔΩ ΕΙΝΑΙ ΤΟ SEARCH: Αγνοούμε το foothubhd για να βρει τον πραγματικό referer
-                if (url.includes('.m3u8') && headers['referer'] && !headers['referer'].includes('foothubhd.st')) {
+                // Πιάνουμε το m3u8 και το referer, αγνοώντας τυχόν διαφημιστικά (π.χ. ads/popups)
+                if (!foundData && url.includes('.m3u8') && headers['referer']) {
                     foundData = {
                         url: url,
                         referer: headers['referer']
                     };
-                    console.log(`\x1b[32m[MATCH] URL: ${url.substring(0, 60)}...\x1b[0m`);
-                    console.log(`\x1b[32m[MATCH] Referer: ${headers['referer']}\x1b[0m`);
+                    console.log(`\x1b[32m[MATCH] Found: ${url.substring(0, 50)}...\x1b[0m`);
                 }
                 route.continue();
             });
@@ -49,16 +50,18 @@ const fs = require('fs');
                 console.log("\x1b[34mLoading:\x1b[0m", targetUrl);
                 await page.goto(targetUrl, { waitUntil: 'load', timeout: 30000 });
                 
-                await delay(4000);
+                // Περιμένουμε 5 δευτερόλεπτα για να προλάβει να φορτώσει ο player το stream
+                await delay(5000);
 
                 if (foundData) {
                     let finalUrl = foundData.url;
                     
-                    // ΑΥΣΤΗΡΑ tracks-v1a1/mono.m3u8
+                    // Η ΔΙΟΡΘΩΣΗ ΠΟΥ ΖΗΤΗΣΕΣ:
                     if (finalUrl.includes('index.m3u8')) {
                         finalUrl = finalUrl.replace('index.m3u8', 'tracks-v1a1/mono.m3u8');
                     }
 
+                    // Ονοματοδοσία καναλιού
                     let streamName;
                     const channelMatch = finalUrl.match(/channel(\d+)/i);
                     if (channelMatch) {
@@ -75,19 +78,21 @@ const fs = require('fs');
                         referer: foundData.referer 
                     });
                 } else {
-                    console.log(`\x1b[31m❌ Could not catch .m3u8 request for: ${targetUrl}\x1b[0m`);
+                    console.log(`\x1b[31m❌ Could not catch .m3u8 for: ${targetUrl}\x1b[0m`);
                 }
 
             } catch (err) {
-                console.error("\x1b[31mError:\x1b[0m", targetUrl);
+                console.error("\x1b[31mError on:\x1b[0m", targetUrl, err.message);
             } finally {
-                await page.close();
+                await context.close(); // Κλείνουμε το context για καθαρή μνήμη
             }
         }
 
+        // Ταξινόμηση και αποθήκευση σε αρχείο
         const sortedLinks = m3u8Links.sort((a, b) => a.streamName.localeCompare(b.streamName, undefined, {numeric: true}));
         let playlist = "#EXTM3U\n";
         sortedLinks.forEach(item => {
+            // Προσθήκη του Referer στο URL για συμβατότητα με VLC/TiviMate
             playlist += `#EXTINF:-1,${item.streamName}\n${item.url}#Referer=${item.referer}\n`;
         });
 
