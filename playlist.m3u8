@@ -1,11 +1,9 @@
 #EXTM3U
-#EXTINF:-1,channel_f1
-https://mopis.rotrimpalkis.shop/secure/a0a6d9bb0d3f82add92a30090b6d7941/1789556836/channelf1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
 #EXTINF:-1,channel1
-https://mopis.rotrimpalkis.shop/secure/37ac0f5be0e5cf5c4c8f4a356c16367f/1789556654/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
+https://mopis.rotrimpalkis.shop/secure/519b2f7602b5f3b852489886fee61386/1789577592/channel1/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
+#EXTINF:-1,channel2
+https://mopis.rotrimpalkis.shop/secure/f849caee73324bce67d12f3a2cf405d3/1789577602/channel2/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
 #EXTINF:-1,channel3
-https://mopis.rotrimpalkis.shop/secure/66b6daf2914e61b8367982fe6c53630d/1789556692/channel3/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
-#EXTINF:-1,channel6
-https://mopis.rotrimpalkis.shop/secure/39bc02407859baf4a31309ddb8f5b068/1789556761/channel6/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
-#EXTINF:-1,channel8
-https://mopis.rotrimpalkis.shop/secure/32e2cf49c3963eb3f5c0dda3056b1eee/1789556798/channel8/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
+https://mopis.rotrimpalkis.shop/secure/a291242998ac6f1e2c687146f01a1dd2/1789577611/channel3/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
+#EXTINF:-1,channel5
+https://mopis.rotrimpalkis.shop/secure/42efc98c55b6ee5e08c1731a2075cfa2/1789577649/channel5/tracks-v1a1/mono.m3u8#Referer=https://foothubhd.st/
